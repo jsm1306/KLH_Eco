@@ -1,17 +1,15 @@
-# TODO: Implement Google Authentication and User Schema
+# TODO: Implement Lost and Found Feature
 
 ## Backend Tasks
-- [x] Install passport and passport-google-oauth20 dependencies in backend/package.json
-- [x] Create backend/models/User.js with User schema (mail, name, role enum)
-- [x] Update backend/server.js to set up Passport Google strategy, serialize/deserialize, and add auth routes (/auth/google, /auth/google/callback, /auth/logout, /auth/current_user)
+- [x] Install multer for image uploads in backend/package.json
+- [x] Create backend/models/LostFound.js with schema (user, tag, location, image, description, createdAt)
+- [x] Update backend/server.js to add routes: POST /api/lostfound (create item with image upload), GET /api/lostfound (list items)
+- [x] Add multer middleware for image handling
 
 ## Frontend Tasks
-- [x] Install react-router-dom dependency in frontend/package.json
-- [x] Update frontend/src/App.js to include routing and Login component
-- [x] Create frontend/src/components/Login.js with Google login button
-- [x] Create frontend/src/components/Dashboard.js for post-login page
+- [x] Install axios in frontend/package.json for API calls
+- [x] Update frontend/src/components/Dashboard.js to add Lost and Found tab
+- [x] Create frontend/src/components/LostFound.js with form (tag, location, image, description) and list of items
 
 ## Followup Steps
-- [x] Install all dependencies (npm install in backend and frontend)
-- [x] Fix session middleware and port issues
-- [ ] Test the login flow: Run backend and frontend, verify user creation in DB
+- [ ] Test the lost and found feature: Upload item, verify storage in DB, display in dashboard
