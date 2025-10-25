@@ -6,6 +6,7 @@ import LostFound from './components/LostFound';
 import Navbar from './components/Navbar';
 import Events from './components/Events';
 import Feedback from './components/Feedback';
+import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
 function App() {
@@ -31,21 +32,44 @@ function App() {
     }
   }, []);
   return (
-    <Router>
-      <div className="App">
-        <Navbar />
-        <div className="app-content">
-          <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/events" element={<Events />} />
-            <Route path="/feedback" element={<Feedback />} />
-            <Route path="/lostfound" element={<LostFound />} />
-          </Routes>
-        </div>
-      </div>
+   <Router>
+      <Navbar />
+      <Routes>
+        {/* Public Route */}
+        <Route path="/dashboard" element={<Dashboard />} />
+
+        {/* Protected Routes */}
+        <Route
+          path="/events"
+          element={
+            <ProtectedRoute>
+              <Events />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/lostfound"
+          element={
+            <ProtectedRoute>
+              <LostFound />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/feedback"
+          element={
+            <ProtectedRoute>
+              <Feedback />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Default route (for login) */}
+        <Route path="/" element={<Dashboard />} />
+      </Routes>
     </Router>
   );
 }
+
 
 export default App;

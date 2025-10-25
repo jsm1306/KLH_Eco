@@ -222,6 +222,72 @@ app.get("/api/lostfound", async (req, res) => {
   }
 });
 
+// Submit a claim for a lost item
+app.post("/api/lostfound/:id/claim", verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { message } = req.body;
+    const item = await LostFound.findById(id);
+    if (!item) return res.status(404).json({ error: 'Item not found' });
+    if (item.user.toString() === req.userId) return res.status(400).json({ error: 'Cannot claim your own item' });
+
+    // Check if user already claimed
+    const existingClaim = item.claims.find(c => c.claimant.toString() === req.userId);
+    if (existingClaim) return res.status(400).json({ error: 'You have already claimed this item' });
+
+    item.claims.push({
+      claimant: req.userId,
+      message,
+      status: 'pending',
+    });
+    await item.save();
+    res.status(201).json({ message: 'Claim submitted successfully' });
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
+// Get claims for a lost item (only for the poster)
+app.get("/api/lostfound/:id/claims", verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const item = await LostFound.findById(id).populate('claims.claimant', 'name mail');
+    if (!item) return res.status(404).json({ error: 'Item not found' });
+    if (item.user.toString() !== req.userId) return res.status(403).json({ error: 'Not authorized' });
+
+    res.json(item.claims);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
+// Verify (approve/reject) a claim
+app.put("/api/lostfound/:id/claim/:claimId/verify", verifyToken, async (req, res) => {
+  try {
+    const { id, claimId } = req.params;
+    const { status } = req.body; // 'approved' or 'rejected'
+    const item = await LostFound.findById(id);
+    if (!item) return res.status(404).json({ error: 'Item not found' });
+    if (item.user.toString() !== req.userId) return res.status(403).json({ error: 'Not authorized' });
+
+    const claim = item.claims.id(claimId);
+    if (!claim) return res.status(404).json({ error: 'Claim not found' });
+
+    claim.status = status;
+    await item.save();
+
+    if (status === 'approved') {
+      // Delete the item from database
+      await LostFound.findByIdAndDelete(id);
+      res.json({ message: 'Claim approved and item removed' });
+    } else {
+      res.json({ message: 'Claim rejected' });
+    }
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
 mongoose
   .connect(process.env.MONG_URI)
   .then(() => {

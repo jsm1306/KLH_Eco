@@ -337,7 +337,7 @@ const Events = () => {
           <button className={`btn-small ${viewMode === 'club' ? 'active' : ''}`} onClick={() => setViewMode('club')}>By Club</button>
           <div style={{ marginLeft: 'auto' }}>
             <button
-              className="btn-small"
+              className="btn"
               onClick={() => {
                 // if opening the form and a club is selected, default the club selector to that club
                 setShowCreateForm((s) => {
@@ -459,8 +459,8 @@ const Events = () => {
                               <p className="event-meta"><strong>Location:</strong> {ev.location || 'TBD'}</p>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 12 }}>
-                              <button className="btn-small" onClick={() => startEdit(ev)}>Edit</button>
-                              <button className="btn-small" onClick={() => deleteEventStart(ev._id)} style={{ background: 'transparent', borderColor: '#fde68a', color: '#b45309' }}>Delete</button>
+                              <button className="btn-small btn-edit" onClick={() => startEdit(ev)}>Edit</button>
+                              <button className="btn-small btn-delete" onClick={() => deleteEventStart(ev._id)}>Delete</button>
                             </div>
                           </div>
                         </article>
@@ -484,8 +484,8 @@ const Events = () => {
                               <p className="event-meta"><strong>Location:</strong> {ev.location || 'TBD'}</p>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 12 }}>
-                              <button className="btn-small" onClick={() => startEdit(ev)}>Edit</button>
-                              <button className="btn-small" onClick={() => deleteEventStart(ev._id)} style={{ background: 'transparent', borderColor: '#fde68a', color: '#b45309' }}>Delete</button>
+                              <button className="btn-small btn-edit" onClick={() => startEdit(ev)}>Edit</button>
+                              <button className="btn-small btn-delete" onClick={() => deleteEventStart(ev._id)}>Delete</button>
                             </div>
                           </div>
                         </article>
@@ -522,8 +522,8 @@ const Events = () => {
                           <p className="event-meta"><strong>Location:</strong> {ev.location || 'TBD'}</p>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 12 }}>
-                          <button className="btn-small" onClick={() => startEdit(ev)}>Edit</button>
-                          <button className="btn-small" onClick={() => deleteEventStart(ev._id)} style={{ background: 'transparent', borderColor: '#fde68a', color: '#b45309' }}>Delete</button>
+                          <button className="btn-small btn-edit" onClick={() => startEdit(ev)}>Edit</button>
+                          <button className="btn-small btn-delete" onClick={() => deleteEventStart(ev._id)}>Delete</button>
                         </div>
                       </div>
                     </article>

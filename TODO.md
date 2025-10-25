@@ -1,15 +1,19 @@
-# TODO: Implement Lost and Found Feature
+# TODO: Implement Claim Feature for Lost and Found
 
-## Backend Tasks
-- [x] Install multer for image uploads in backend/package.json
-- [x] Create backend/models/LostFound.js with schema (user, tag, location, image, description, createdAt)
-- [x] Update backend/server.js to add routes: POST /api/lostfound (create item with image upload), GET /api/lostfound (list items)
-- [x] Add multer middleware for image handling
+## Backend Changes
+- [x] Update LostFound model to include claims array (claimant, message, status, createdAt)
+- [x] Add POST /api/lostfound/:id/claim endpoint for submitting claims
+- [x] Add GET /api/lostfound/:id/claims endpoint for viewing claims (for poster)
+- [x] Add PUT /api/lostfound/:id/claim/:claimId/verify endpoint for approving/rejecting claims and deleting item if approved
 
-## Frontend Tasks
-- [x] Install axios in frontend/package.json for API calls
-- [x] Update frontend/src/components/Dashboard.js to add Lost and Found tab
-- [x] Create frontend/src/components/LostFound.js with form (tag, location, image, description) and list of items
+## Frontend Changes
+- [x] Add "Claim Item" button on each item card (if not own item)
+- [x] Add modal for entering claim message
+- [x] For item poster, display claims with approve/reject buttons
+- [x] Remove item from list when claim is approved and item is deleted
 
-## Followup Steps
-- [ ] Test the lost and found feature: Upload item, verify storage in DB, display in dashboard
+## Testing
+- [ ] Test claiming an item
+- [ ] Test viewing claims as poster
+- [ ] Test approving claim and item deletion
+- [ ] Test rejecting claim
