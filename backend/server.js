@@ -115,7 +115,7 @@ app.get(
     res.cookie('token', token, { httpOnly: true });
     // Log token and redirect URL for debugging
     // Use URL hash to transmit token to frontend (not sent to server on subsequent requests)
-    const redirectUrl = `https://klh-eco-frontend.onrender.com/dashboard#token=${token}`;
+    const redirectUrl = `https://klh-eco-frontend.onrender.com/dashboard?token=${token}`;
     console.log('OAuth callback: issuing token, token length:', token.length, 'redirecting to', redirectUrl);
     // Also include token in redirect URL hash so frontend (in dev) can pick it up when cookies are blocked
     // NOTE: In production you should prefer httpOnly cookie + proper SameSite/Secure settings.
