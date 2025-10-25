@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import LostFound from './components/LostFound';
@@ -16,29 +16,49 @@ function App() {
       const params = new URLSearchParams(window.location.search);
       let urlToken = params.get('token');
       let fromHash = false;
+      
       if (!urlToken && window.location.hash) {
         const hash = window.location.hash.substring(1);
         const hashParams = new URLSearchParams(hash);
         urlToken = hashParams.get('token');
         fromHash = true;
       }
+      
       if (urlToken) {
         console.log('App: captured token from URL/hash, saving to localStorage');
         localStorage.setItem('token', urlToken);
-        // remove token from URL (search and hash)
+        
+        // Remove token from URL (search and hash)
         params.delete('token');
-        const newUrl = window.location.pathname + (params.toString() ? `?${params.toString()}` : '');
+        let newUrl = window.location.pathname;
+        
+        // Clean up hash if token was in hash
+        if (fromHash) {
+          window.location.hash = '';
+        }
+        
+        if (params.toString()) {
+          newUrl += `?${params.toString()}`;
+        }
+        
         window.history.replaceState({}, document.title, newUrl);
+        
+        // ✅ ADD THIS: Force navigation to dashboard
+        if (window.location.pathname !== '/dashboard') {
+          window.location.href = '/dashboard';
+        }
       }
     } catch (e) {
       console.error('App: error parsing token from URL', e);
     }
   }, []);
+
   return (
-   <Router>
+    <Router>
       <Navbar />
       <Routes>
-        {/* Public Route */}
+        {/* Public Routes */}
+        <Route path="/" element={<Dashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
 
         {/* Protected Routes */}
@@ -67,12 +87,11 @@ function App() {
           }
         />
 
-        {/* Default route (for login) */}
-        <Route path="/" element={<Dashboard />} />
+        {/* 404 Catch-all route */}
+        <Route path="*" element={<Dashboard />} />
       </Routes>
     </Router>
   );
 }
-
 
 export default App;
