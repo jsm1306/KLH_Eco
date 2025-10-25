@@ -42,7 +42,7 @@ const Events = () => {
     // fetch all events across clubs
     const fetchAll = async () => {
       try {
-        const res = await fetch('http://localhost:4000/api/events');
+      const res = await fetch('https://klh-eco-backend.onrender.com/api/events');
         const data = await res.json();
         setAllEvents(data || []);
         // build map clubId -> events
@@ -68,7 +68,7 @@ const Events = () => {
   const fetchClubs = async () => {
     setLoadingClubs(true);
     try {
-      const res = await fetch('http://localhost:4000/api/clubs');
+      const res = await fetch('https://klh-eco-backend.onrender.com/api/clubs');
       const data = await res.json();
       setClubs(data || []);
     } catch (err) {
@@ -129,7 +129,7 @@ const Events = () => {
       };
 
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:4000/api/events/${editingEvent._id}`, {
+      const res = await fetch(`https://klh-eco-backend.onrender.com/api/events/${editingEvent._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -205,7 +205,7 @@ const Events = () => {
     setShowConfirm(false);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:4000/api/events/${id}`, {
+      const res = await fetch(`https://klh-eco-backend.onrender.com/api/events/${id}`, {
         method: 'DELETE',
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -243,7 +243,7 @@ const Events = () => {
         setClubEvents(eventsByClub[club._id]);
       } else {
         // fetch club details (includes events) from server
-        const res = await fetch(`http://localhost:4000/api/clubs/${club._id}`);
+        const res = await fetch(`https://klh-eco-backend.onrender.com/api/clubs/${club._id}`);
         const data = await res.json();
         setClubEvents(data.events || []);
       }
@@ -268,7 +268,7 @@ const Events = () => {
       };
 
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:4000/api/events', {
+      const res = await fetch('https://klh-eco-backend.onrender.com/api/events', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

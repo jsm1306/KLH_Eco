@@ -17,7 +17,7 @@ const Navbar = () => {
         },
         credentials: 'include',
       };
-      const res = await fetch('http://localhost:4000/auth/current_user', opts);
+      const res = await fetch('https://klh-eco-backend.onrender.com/auth/current_user', opts);
       if (!res.ok) {
         setUser(null);
         return;
@@ -63,7 +63,7 @@ const Navbar = () => {
     setUser(null);
     // call backend logout to clear cookie/session and redirect to frontend root
     // use fetch so we can remain in SPA and then navigate
-    fetch('http://localhost:4000/auth/logout', { credentials: 'include' })
+    fetch('https://klh-eco-backend.onrender.com/auth/logout', { credentials: 'include' })
       .then(() => {
         navigate('/');
       })
@@ -72,7 +72,7 @@ const Navbar = () => {
 
   const handleLogin = () => {
     // Start OAuth flow by redirecting to backend
-    window.location.href = 'http://localhost:4000/auth/google';
+    window.location.href = 'https://klh-eco-backend.onrender.com/auth/google';
   };
 
   return (

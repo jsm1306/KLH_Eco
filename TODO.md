@@ -1,19 +1,18 @@
-# TODO: Implement Claim Feature for Lost and Found
+# TODO: Fix Hardcoded Localhost URLs for Deployment
 
-## Backend Changes
-- [x] Update LostFound model to include claims array (claimant, message, status, createdAt)
-- [x] Add POST /api/lostfound/:id/claim endpoint for submitting claims
-- [x] Add GET /api/lostfound/:id/claims endpoint for viewing claims (for poster)
-- [x] Add PUT /api/lostfound/:id/claim/:claimId/verify endpoint for approving/rejecting claims and deleting item if approved
+## Frontend Components (Replace localhost:4000 with https://klh-eco-backend.onrender.com)
+- [ ] frontend/src/components/Events.js
+- [ ] frontend/src/components/Navbar.js
+- [ ] frontend/src/components/Feedback.js
+- [ ] frontend/src/components/LostFound.js
 
-## Frontend Changes
-- [x] Add "Claim Item" button on each item card (if not own item)
-- [x] Add modal for entering claim message
-- [x] For item poster, display claims with approve/reject buttons
-- [x] Remove item from list when claim is approved and item is deleted
+## Backend Files
+- [ ] backend/server.js (CORS origin: localhost:3000 -> https://klh-eco-frontend.onrender.com, redirects)
+- [ ] backend/utils/passportConfig.js (callback URL)
+- [ ] backend/testBackend.js (baseURL)
 
-## Testing
-- [ ] Test claiming an item
-- [ ] Test viewing claims as poster
-- [ ] Test approving claim and item deletion
-- [ ] Test rejecting claim
+## Frontend Public
+- [ ] frontend/public/index.html (CSP policy: connect-src and img-src)
+
+## Verification
+- [ ] Test frontend and backend integration after changes

@@ -21,7 +21,7 @@ const Feedback = () => {
 
   const fetchRecent = async () => {
     try {
-      const res = await fetch('http://localhost:4000/api/feedback');
+      const res = await fetch('https://klh-eco-backend.onrender.com/api/feedback');
       const data = await res.json();
       setRecent(data.slice(0, 10));
     } catch (err) {
@@ -34,7 +34,7 @@ const Feedback = () => {
     setStatus('sending');
     try {
       const cfg = getFetchConfig();
-      const res = await fetch('http://localhost:4000/api/feedback', {
+      const res = await fetch('https://klh-eco-backend.onrender.com/api/feedback', {
         method: 'POST',
         ...cfg,
         body: JSON.stringify({ name, email, type, subject, message }),
