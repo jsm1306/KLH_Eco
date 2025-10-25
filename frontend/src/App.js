@@ -6,8 +6,9 @@ import LostFound from './components/LostFound';
 import Navbar from './components/Navbar';
 import Events from './components/Events';
 import Feedback from './components/Feedback';
+import Chatbot from './components/Chatbot';
+import BotpressChat from './components/BotpressChat';
 import ProtectedRoute from './components/ProtectedRoute';
-import './App.css';
 
 function App() {
   useEffect(() => {
@@ -67,6 +68,8 @@ function App() {
         {/* Default route (for login) */}
         <Route path="/" element={<Dashboard />} />
       </Routes>
+      
+      {/* Botpress chatbot loaded via index.html */}
     </Router>
   );
 }

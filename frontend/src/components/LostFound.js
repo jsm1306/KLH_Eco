@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Modal from './Modal.js';
+import '../index.css';
 
 const LostFound = () => {
   const [items, setItems] = useState([]);

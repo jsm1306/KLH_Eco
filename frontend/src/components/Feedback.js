@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import '../index.css';
 
 const Feedback = () => {
   const [type, setType] = useState('feedback');
@@ -8,10 +9,31 @@ const Feedback = () => {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState(null);
   const [recent, setRecent] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    fetchCurrentUser();
     fetchRecent();
   }, []);
+
+  const fetchCurrentUser = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const res = await fetch('http://localhost:4000/auth/current_user', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const user = await res.json();
+        setCurrentUser(user);
+        setIsAdmin(user.role === 'admin');
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+    }
+  };
 
   const getFetchConfig = () => {
     const token = localStorage.getItem('token');
@@ -21,7 +43,8 @@ const Feedback = () => {
 
   const fetchRecent = async () => {
     try {
-      const res = await fetch('http://localhost:4000/api/feedback');
+      const cfg = getFetchConfig();
+      const res = await fetch('http://localhost:4000/api/feedback', cfg);
       const data = await res.json();
       setRecent(data.slice(0, 10));
     } catch (err) {
@@ -86,14 +109,21 @@ const Feedback = () => {
       </div>
 
       <aside className="fb-recent">
-        <h3>Recent submissions</h3>
-        {recent.length === 0 ? <p>No submissions yet.</p> : (
+        <h3>{isAdmin ? 'All Feedback Submissions' : 'My Submissions'}</h3>
+        {recent.length === 0 ? <p>{isAdmin ? 'No submissions yet.' : 'You haven\'t submitted any feedback yet.'}</p> : (
           <ul className="fb-list">
             {recent.map((r) => (
               <li key={r._id} className="fb-item">
-                <div className="fb-meta">{r.type.toUpperCase()} — {new Date(r.createdAt).toLocaleString()}</div>
+                <div className="fb-meta">
+                  <span className={`fb-type ${r.type}`}>{r.type.toUpperCase()}</span>
+                  {/* <span className={`fb-status ${r.status}`}>{r.status}</span> */}
+                  <span className="fb-date">{new Date(r.createdAt).toLocaleString()}</span>
+                </div>
                 <div className="fb-subject">{r.subject}</div>
                 <div className="fb-message">{r.message}</div>
+                {isAdmin && r.user && (
+                  <div className="fb-user">Submitted by: {r.user.name || r.name || 'Anonymous'}</div>
+                )}
               </li>
             ))}
           </ul>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Modal from './Modal';
+import '../index.css';
 
 const Events = () => {
   const [clubs, setClubs] = useState([]);
@@ -10,6 +11,9 @@ const Events = () => {
   const [viewMode, setViewMode] = useState('all'); // 'all' | 'club'
   const [loadingClubs, setLoadingClubs] = useState(false);
   const [loadingEvents, setLoadingEvents] = useState(false);
+  // User state for role-based access
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   // Create event form state
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newTitle, setNewTitle] = useState('');
@@ -27,8 +31,36 @@ const Events = () => {
   const [editClubId, setEditClubId] = useState('');
   const [updating, setUpdating] = useState(false);
 
+  // Fetch current user to check role
+  const fetchCurrentUser = async () => {
+    try {
+      const storedToken = localStorage.getItem('token');
+      const opts = {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {}),
+        },
+        credentials: 'include',
+      };
+      const res = await fetch('http://localhost:4000/auth/current_user', opts);
+      if (!res.ok) {
+        setCurrentUser(null);
+        setIsAdmin(false);
+        return;
+      }
+      const data = await res.json();
+      setCurrentUser(data);
+      setIsAdmin(data.role === 'admin');
+    } catch (err) {
+      setCurrentUser(null);
+      setIsAdmin(false);
+    }
+  };
+
   useEffect(() => {
     fetchClubs();
+    fetchCurrentUser();
   }, []);
 
   useEffect(() => {
@@ -335,24 +367,26 @@ const Events = () => {
         <div className="events-view-toggle">
           <button className={`btn-small ${viewMode === 'all' ? 'active' : ''}`} onClick={() => setViewMode('all')}>All Events</button>
           <button className={`btn-small ${viewMode === 'club' ? 'active' : ''}`} onClick={() => setViewMode('club')}>By Club</button>
-          <div style={{ marginLeft: 'auto' }}>
-            <button
-              className="btn"
-              onClick={() => {
-                // if opening the form and a club is selected, default the club selector to that club
-                setShowCreateForm((s) => {
-                  const opening = !s;
-                  if (opening && selectedClub) setNewClubId(selectedClub._id);
-                  return opening;
-                });
-              }}
-            >
-              {showCreateForm ? 'Cancel' : 'Create Event'}
-            </button>
-          </div>
+          {isAdmin && (
+            <div style={{ marginLeft: 'auto' }}>
+              <button
+                className="btn"
+                onClick={() => {
+                  // if opening the form and a club is selected, default the club selector to that club
+                  setShowCreateForm((s) => {
+                    const opening = !s;
+                    if (opening && selectedClub) setNewClubId(selectedClub._id);
+                    return opening;
+                  });
+                }}
+              >
+                {showCreateForm ? 'Cancel' : 'Create Event'}
+              </button>
+            </div>
+          )}
         </div>
 
-        {showCreateForm && (
+        {showCreateForm && isAdmin && (
           <div className="create-event-form" style={{ marginBottom: 16, background: '#fff', padding: 12, borderRadius: 8, boxShadow: '0 2px 8px rgba(16,24,40,0.04)' }}>
             <h3 style={{ marginTop: 0 }}>Create Event</h3>
             <form onSubmit={createEvent}>
@@ -458,10 +492,12 @@ const Events = () => {
                               <p className="event-meta"><strong>Date:</strong> {ev.date ? new Date(ev.date).toLocaleString() : 'TBD'}</p>
                               <p className="event-meta"><strong>Location:</strong> {ev.location || 'TBD'}</p>
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 12 }}>
-                              <button className="btn-small btn-edit" onClick={() => startEdit(ev)}>Edit</button>
-                              <button className="btn-small btn-delete" onClick={() => deleteEventStart(ev._id)}>Delete</button>
-                            </div>
+                            {isAdmin && (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 12 }}>
+                                <button className="btn-small btn-edit" onClick={() => startEdit(ev)}>Edit</button>
+                                <button className="btn-small btn-delete" onClick={() => deleteEventStart(ev._id)}>Delete</button>
+                              </div>
+                            )}
                           </div>
                         </article>
                       ))}
@@ -483,10 +519,12 @@ const Events = () => {
                               <p className="event-meta"><strong>Date:</strong> {ev.date ? new Date(ev.date).toLocaleString() : 'TBD'}</p>
                               <p className="event-meta"><strong>Location:</strong> {ev.location || 'TBD'}</p>
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 12 }}>
-                              <button className="btn-small btn-edit" onClick={() => startEdit(ev)}>Edit</button>
-                              <button className="btn-small btn-delete" onClick={() => deleteEventStart(ev._id)}>Delete</button>
-                            </div>
+                            {isAdmin && (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 12 }}>
+                                <button className="btn-small btn-edit" onClick={() => startEdit(ev)}>Edit</button>
+                                <button className="btn-small btn-delete" onClick={() => deleteEventStart(ev._id)}>Delete</button>
+                              </div>
+                            )}
                           </div>
                         </article>
                       ))}
@@ -521,10 +559,12 @@ const Events = () => {
                           <p className="event-meta"><strong>Date:</strong> {ev.date ? new Date(ev.date).toLocaleString() : 'TBD'}</p>
                           <p className="event-meta"><strong>Location:</strong> {ev.location || 'TBD'}</p>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 12 }}>
-                          <button className="btn-small btn-edit" onClick={() => startEdit(ev)}>Edit</button>
-                          <button className="btn-small btn-delete" onClick={() => deleteEventStart(ev._id)}>Delete</button>
-                        </div>
+                        {isAdmin && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 12 }}>
+                            <button className="btn-small btn-edit" onClick={() => startEdit(ev)}>Edit</button>
+                            <button className="btn-small btn-delete" onClick={() => deleteEventStart(ev._id)}>Delete</button>
+                          </div>
+                        )}
                       </div>
                     </article>
                   ))}

@@ -1,4 +1,5 @@
 import React from 'react';
+import '../index.css';
 
 const Modal = ({ title, children, onClose, footer, closeOnBackdrop = true }) => {
   const handleBackdrop = (e) => {
