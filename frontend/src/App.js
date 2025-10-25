@@ -15,17 +15,20 @@ function App() {
     try {
       const params = new URLSearchParams(window.location.search);
       let urlToken = params.get('token');
+      let fromHash = false;
       if (!urlToken && window.location.hash) {
         const hash = window.location.hash.substring(1);
         const hashParams = new URLSearchParams(hash);
         urlToken = hashParams.get('token');
+        fromHash = true;
       }
       if (urlToken) {
         console.log('App: captured token from URL/hash, saving to localStorage');
         localStorage.setItem('token', urlToken);
-        // remove token from URL (both search and hash)
+        // remove token from URL (search and hash)
         params.delete('token');
-        window.history.replaceState({}, document.title, window.location.pathname + (params.toString() ? `?${params.toString()}` : ''));
+        const newUrl = window.location.pathname + (params.toString() ? `?${params.toString()}` : '');
+        window.history.replaceState({}, document.title, newUrl);
       }
     } catch (e) {
       console.error('App: error parsing token from URL', e);

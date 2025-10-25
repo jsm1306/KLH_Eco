@@ -13,8 +13,8 @@ router.get("/google", passport.authenticate("google", { scope: ["profile", "mail
 router.get("/google/callback",
   passport.authenticate("google", { failureRedirect: "https://klh-eco-frontend.onrender.com" }),
   (req, res) => {
-    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
-    res.redirect(`https://klh-eco-frontend.onrender.com#token=${token}`);
+    const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    res.redirect(`https://klh-eco-frontend.onrender.com/?token=${token}`);
   }
 );
 
@@ -27,7 +27,7 @@ router.get("/current_user", async (req, res) => {
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    const user = await User.findById(decoded.id);
+    const user = await User.findById(decoded.userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
     res.json(user);
