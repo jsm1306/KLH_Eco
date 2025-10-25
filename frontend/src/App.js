@@ -9,9 +9,11 @@ import Feedback from './components/Feedback';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
-function App() {
+function TokenHandler() {
+  const navigate = useNavigate();
+
   useEffect(() => {
-    // Global token capture: read token from query param or hash on app mount
+    // Handle token from OAuth redirect
     try {
       const params = new URLSearchParams(window.location.search);
       let urlToken = params.get('token');
@@ -25,36 +27,30 @@ function App() {
       }
       
       if (urlToken) {
-        console.log('App: captured token from URL/hash, saving to localStorage');
+        console.log('TokenHandler: captured token, saving to localStorage');
         localStorage.setItem('token', urlToken);
         
-        // Remove token from URL (search and hash)
-        params.delete('token');
-        let newUrl = window.location.pathname;
+        // Clean URL without full page reload
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete('token');
+        newUrl.hash = '';
+        window.history.replaceState({}, document.title, newUrl.pathname);
         
-        // Clean up hash if token was in hash
-        if (fromHash) {
-          window.location.hash = '';
-        }
-        
-        if (params.toString()) {
-          newUrl += `?${params.toString()}`;
-        }
-        
-        window.history.replaceState({}, document.title, newUrl);
-        
-        // ✅ ADD THIS: Force navigation to dashboard
-        if (window.location.pathname !== '/dashboard') {
-          window.location.href = '/dashboard';
-        }
+        // Navigate to dashboard using React Router (no reload)
+        navigate('/dashboard', { replace: true });
       }
     } catch (e) {
-      console.error('App: error parsing token from URL', e);
+      console.error('TokenHandler: error parsing token', e);
     }
-  }, []);
+  }, [navigate]);
 
+  return null;
+}
+
+function App() {
   return (
     <Router>
+      <TokenHandler />
       <Navbar />
       <Routes>
         {/* Public Routes */}

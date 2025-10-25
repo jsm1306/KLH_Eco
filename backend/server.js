@@ -301,11 +301,6 @@ mongoose
   });
 
 
-// Default route (for sanity check)
-app.get("/", (req, res) => {
-  res.send("KLH Smart Campus API is running...");
-});
-
 // Use routes
 app.use("/api/events", eventRoutes);
 app.use("/api/clubs", clubRoutes);

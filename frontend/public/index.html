@@ -30,15 +30,35 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
+    
+    <script src="https://cdn.botpress.cloud/webchat/v2.2/inject.js"></script>
+    <script>
+      window.botpress.init({
+        "botId": "1ca83ec7-cf68-4d60-9986-5fd8b2f7e863",
+        "configuration": {
+          "version": "v2",
+          "website": {},
+          "email": {},
+          "phone": {},
+          "termsOfService": {},
+          "privacyPolicy": {},
+          "color": "#3276EA",
+          "variant": "solid",
+          "headerVariant": "glass",
+          "themeMode": "light",
+          "fontFamily": "inter",
+          "radius": 4,
+          "feedbackEnabled": false,
+          "footer": "[⚡️ by Botpress](https://botpress.com/?from=webchat)",
+          "soundEnabled": false,
+          "proactiveMessageEnabled": false,
+          "proactiveBubbleMessage": "Hi! 👋 Need help?",
+          "proactiveBubbleTriggerType": "afterDelay",
+          "proactiveBubbleDelayTime": 10
+        },
+        "clientId": "35f2a48f-02de-4a68-8044-4273eaf4a31a"
+      });
+    </script>
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
   </body>
 </html>
