@@ -231,6 +231,7 @@
 
 .lf-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:16px; }
 .lf-card { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:10px; overflow:hidden; box-shadow:0 6px 18px rgba(11,12,16,0.18); display:flex; flex-direction:column; border:1px solid rgba(70,162,158,0.06); }
+.lf-card.claimed { opacity: 0.5; }
 .lf-image { width:100%; height:160px; object-fit:cover; }
 .lf-card-body { padding:12px; }
 .lf-tag { margin:0 0 8px 0; font-size:18px; color:var(--c5); font-weight:600 }

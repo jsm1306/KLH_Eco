@@ -221,7 +221,7 @@ const LostFound = () => {
 
             <div className="lf-grid">
               {filteredItems.map((item) => (
-                <article key={item._id} className="lf-card">
+                <article key={item._id} className={`lf-card ${claimedItems.has(item._id) ? 'claimed' : ''}`}>
                   {item.image && <img className="lf-image" src={`http://localhost:4000/${item.image}`} alt={item.tag} />}
                   <div className="lf-card-body">
                     <h3 className="lf-tag">{item.tag}</h3>
