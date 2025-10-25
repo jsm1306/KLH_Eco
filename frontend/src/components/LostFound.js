@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import Modal from './Modal.js';
 
 const LostFound = () => {
   const [items, setItems] = useState([]);
@@ -9,15 +10,32 @@ const LostFound = () => {
   const [isPosting, setIsPosting] = useState(false);
   const [error, setError] = useState(null);
   const [selectedTag, setSelectedTag] = useState('All');
+  const [currentUser, setCurrentUser] = useState(null);
+  const [claimModal, setClaimModal] = useState({ open: false, item: null });
+  const [claimMessage, setClaimMessage] = useState('');
+  const [claims, setClaims] = useState({});
+  const [claimsModal, setClaimsModal] = useState({ open: false, item: null });
+  const [claimedItems, setClaimedItems] = useState(new Set());
 
   useEffect(() => {
     fetchItems();
+    fetchCurrentUser();
   }, []);
 
   const getAxiosConfig = () => {
     const storedToken = localStorage.getItem('token');
     if (storedToken) return { headers: { Authorization: `Bearer ${storedToken}` } };
     return { withCredentials: true };
+  };
+
+  const fetchCurrentUser = async () => {
+    try {
+      const cfg = getAxiosConfig();
+      const res = await axios.get('http://localhost:4000/auth/current_user', cfg);
+      setCurrentUser(res.data);
+    } catch (err) {
+      console.error('Failed to fetch current user', err);
+    }
   };
 
   const fetchItems = async () => {
@@ -90,6 +108,46 @@ const LostFound = () => {
       }
     } else {
       setForm({ ...form, [e.target.name]: e.target.value });
+    }
+  };
+
+  const handleClaimSubmit = async (e) => {
+    e.preventDefault();
+    if (!claimModal.item || !claimMessage.trim()) return;
+    try {
+      const cfg = getAxiosConfig();
+      await axios.post(`http://localhost:4000/api/lostfound/${claimModal.item._id}/claim`, { message: claimMessage }, cfg);
+      setClaimedItems(prev => new Set([...prev, claimModal.item._id]));
+      setClaimModal({ open: false, item: null });
+      setClaimMessage('');
+      alert('Claim submitted successfully!');
+    } catch (err) {
+      console.error('Claim failed', err);
+      alert('Failed to submit claim');
+    }
+  };
+
+  const handleVerifyClaim = async (claimId, status) => {
+    if (!claimsModal.item) return;
+    try {
+      const cfg = getAxiosConfig();
+      await axios.put(`http://localhost:4000/api/lostfound/${claimsModal.item._id}/claim/${claimId}/verify`, { status }, cfg);
+      setClaimsModal({ open: false, item: null });
+      await fetchItems(); // Refresh items to remove approved item
+      alert(`Claim ${status} successfully!`);
+    } catch (err) {
+      console.error('Verify claim failed', err);
+      alert('Failed to verify claim');
+    }
+  };
+
+  const fetchClaims = async (itemId) => {
+    try {
+      const cfg = getAxiosConfig();
+      const res = await axios.get(`http://localhost:4000/api/lostfound/${itemId}/claims`, cfg);
+      setClaims(prev => ({ ...prev, [itemId]: res.data }));
+    } catch (err) {
+      console.error('Failed to fetch claims', err);
     }
   };
 
@@ -171,6 +229,17 @@ const LostFound = () => {
                     <p className="lf-meta"><strong>Location:</strong> {item.location}</p>
                     <p className="lf-meta"><strong>Posted by:</strong> {item.user?.name} ({item.user?.mail})</p>
                     <p className="lf-meta"><small>{new Date(item.createdAt).toLocaleString()}</small></p>
+                    <div className="lf-actions">
+                      {currentUser && item.user._id !== currentUser._id && !claimedItems.has(item._id) && (
+                        <button className="btn-secondary" onClick={() => setClaimModal({ open: true, item })}>Claim Item</button>
+                      )}
+                      {currentUser && item.user._id !== currentUser._id && claimedItems.has(item._id) && (
+                        <button className="btn-secondary" disabled>Claim Submitted</button>
+                      )}
+                      {currentUser && item.user._id === currentUser._id && (
+                        <button className="btn-secondary" onClick={() => { setClaimsModal({ open: true, item }); fetchClaims(item._id); }}>View Claims</button>
+                      )}
+                    </div>
                   </div>
                 </article>
               ))}
@@ -178,6 +247,51 @@ const LostFound = () => {
           </>
         )}
       </div>
+
+      {/* Claim Modal */}
+      {claimModal.open && (
+        <Modal title="Claim Item" onClose={() => setClaimModal({ open: false, item: null })}>
+          <form onSubmit={handleClaimSubmit}>
+            <label>
+              Claim Message
+              <textarea
+                value={claimMessage}
+                onChange={(e) => setClaimMessage(e.target.value)}
+                placeholder="Describe why this item belongs to you..."
+                required
+              />
+            </label>
+            <div className="modal-footer">
+              <button type="submit" className="btn-primary">Submit Claim</button>
+              <button type="button" className="btn-secondary" onClick={() => setClaimModal({ open: false, item: null })}>Cancel</button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* Claims Modal */}
+      {claimsModal.open && (
+        <Modal title="Claims for Item" onClose={() => setClaimsModal({ open: false, item: null })}>
+          {claims[claimsModal.item._id]?.length > 0 ? (
+            claims[claimsModal.item._id].map((claim) => (
+              <div key={claim._id} className="claim-item">
+                <p><strong>Claimant:</strong> {claim.claimant.name} ({claim.claimant.mail})</p>
+                <p><strong>Message:</strong> {claim.message}</p>
+                <p><strong>Status:</strong> {claim.status}</p>
+                <p><small>{new Date(claim.createdAt).toLocaleString()}</small></p>
+                {claim.status === 'pending' && (
+                  <div>
+                    <button className="btn-primary" onClick={() => handleVerifyClaim(claim._id, 'approved')}>Approve</button>
+                    <button className="btn-secondary" onClick={() => handleVerifyClaim(claim._id, 'rejected')}>Reject</button>
+                  </div>
+                )}
+              </div>
+            ))
+          ) : (
+            <p>No claims yet.</p>
+          )}
+        </Modal>
+      )}
     </div>
   );
 };
