@@ -89,7 +89,7 @@ app.use(passport.session());
 
 // Root route to redirect to frontend
 app.get("/", (req, res) => {
-  res.redirect("http://localhost:3000/");
+  res.redirect("https://klh-eco-frontend.onrender.com");
 });
 
 // Multer config for image uploads
