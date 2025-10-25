@@ -14,7 +14,7 @@ router.get("/google/callback",
   passport.authenticate("google", { failureRedirect: "https://klh-eco-frontend.onrender.com" }),
   (req, res) => {
     const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
-    res.redirect(`https://klh-eco-frontend.onrender.com/?token=${token}`);
+    res.redirect(`https://klh-eco-frontend.onrender.com/dashboard?token=${token}`);
   }
 );
 
