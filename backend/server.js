@@ -14,6 +14,7 @@ import LostFound from "./models/LostFound.js";
 
 import eventRoutes from "./routes/eventRoutes.js";
 import clubRoutes from "./routes/clubRoutes.js";
+import feedbackRoutes from "./routes/feedbackRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -242,3 +243,4 @@ app.get("/", (req, res) => {
 // Use routes
 app.use("/api/events", eventRoutes);
 app.use("/api/clubs", clubRoutes);
+app.use("/api/feedback", feedbackRoutes);

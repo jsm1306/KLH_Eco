@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const [user, setUser] = useState(null);
+  const [theme, setTheme] = useState('dark');
   const navigate = useNavigate();
 
   const fetchCurrentUser = async () => {
@@ -41,6 +42,21 @@ const Navbar = () => {
     return () => window.removeEventListener('storage', onStorage);
   }, []);
 
+  // Theme toggle
+  useEffect(() => {
+    const t = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', t);
+    setTheme(t);
+  }, []);
+
+  const toggleTheme = () => {
+    const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    setTheme(next);
+  };
+
   const handleLogout = () => {
     // clear local token first
     localStorage.removeItem('token');
@@ -54,21 +70,29 @@ const Navbar = () => {
       .catch(() => navigate('/'));
   };
 
+  const handleLogin = () => {
+    // Start OAuth flow by redirecting to backend
+    window.location.href = 'http://localhost:4000/auth/google';
+  };
+
   return (
     <nav className="app-navbar">
       <div className="nav-left">
         <Link to="/dashboard" className="nav-brand">KLH Eco</Link>
-        <Link to="/dashboard" className="nav-link">Dashboard</Link>
-        <Link to="/lostfound" className="nav-link">Lost & Found</Link>
+  <Link to="/dashboard" className="nav-link">Dashboard</Link>
+  <Link to="/events" className="nav-link">Events</Link>
+  <Link to="/lostfound" className="nav-link">Lost & Found</Link>
+  <Link to="/feedback" className="nav-link">Feedback</Link>
       </div>
       <div className="nav-right">
+        <button style={{ marginRight: 10 }} className="nav-cta" onClick={toggleTheme}>{theme === 'dark' ? 'Light' : 'Dark'}</button>
         {user ? (
           <>
             <span className="nav-user">{user.name}</span>
             <button className="nav-cta" onClick={handleLogout}>Logout</button>
           </>
         ) : (
-          <Link to="/" className="nav-cta">Login</Link>
+          <button className="nav-cta" onClick={handleLogin}>Login</button>
         )}
       </div>
     </nav>

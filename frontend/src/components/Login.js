@@ -1,60 +1,18 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 
 const Login = () => {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    // Check if user is already logged in
-    // Try token from localStorage first (set by redirect), otherwise rely on cookie
-    // Also check hash in case redirect used fragment (#token=)
-    // Parse token from URL hash and persist it
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const tokenFromHash = hashParams.get('token');
-    if (tokenFromHash) {
-      localStorage.setItem('token', tokenFromHash);
-      // remove token from URL so it isn't leaked in history
-      window.history.replaceState(null, '', window.location.pathname + window.location.search);
-    }
-
-    // Then use stored token when calling current_user
-    const storedToken = localStorage.getItem('token');
-    console.log('Login: storedToken present:', !!storedToken);
-
-    const fetchOptions = {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {})
-      },
-      // optional: include credentials if you later rely on cookies
-      credentials: 'include'
-    };
-
-    fetch('http://localhost:4000/auth/current_user', fetchOptions)
-      .then(res => {
-        if (!res.ok) throw new Error('Not authenticated');
-        return res.json();
-      })
-      .then(user => {
-        console.log('User authenticated:', user);
-        // ...existing code to set user state...
-      })
-      .catch(err => {
-        console.log('User not authenticated:', err.message);
-      });
-  }, [navigate]);
-
-  const handleLogin = () => {
-    window.location.href = 'http://localhost:4000/auth/google'; // backend URL
-  };
-
   return (
-    <div style={{ textAlign: 'center', marginTop: '50px' }}>
-      <h1>Login</h1>
-      <button onClick={handleLogin} style={{ padding: '10px 20px', fontSize: '16px' }}>
-        Login with Google
-      </button>
+    <div className="home-hero">
+      <div className="home-card">
+        <h1>Welcome to KLH Eco</h1>
+        <p className="home-sub">We're glad you're here. Use the navigation above to explore events, post or find lost items, and connect with clubs on campus.</p>
+        <ul className="home-features">
+          <li>Discover upcoming events by clubs</li>
+          <li>Post and search lost & found items</li>
+          <li>Sign in with your KLH account to participate</li>
+        </ul>
+        <p className="home-cta">Tip: Use the Login button in the top-right to sign in.</p>
+      </div>
     </div>
   );
 };

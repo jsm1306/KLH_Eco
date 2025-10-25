@@ -4,6 +4,8 @@ import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import LostFound from './components/LostFound';
 import Navbar from './components/Navbar';
+import Events from './components/Events';
+import Feedback from './components/Feedback';
 import './App.css';
 
 function App() {
@@ -36,6 +38,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/feedback" element={<Feedback />} />
             <Route path="/lostfound" element={<LostFound />} />
           </Routes>
         </div>
