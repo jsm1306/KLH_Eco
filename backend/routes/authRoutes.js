@@ -11,10 +11,10 @@ router.get("/google", passport.authenticate("google", { scope: ["profile", "mail
 
 // Step 2: Google callback
 router.get("/google/callback",
-  passport.authenticate("google", { failureRedirect: "http://localhost:3000" }),
+  passport.authenticate("google", { failureRedirect: "https://klh-eco-frontend.onrender.com" }),
   (req, res) => {
     const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
-    res.redirect(`http://localhost:3000#token=${token}`);
+    res.redirect(`https://klh-eco-frontend.onrender.com#token=${token}`);
   }
 );
 
