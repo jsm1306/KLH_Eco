@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import Modal from './Modal.js';
 import '../index.css';
@@ -17,11 +17,7 @@ const LostFound = () => {
   const [claims, setClaims] = useState({});
   const [claimsModal, setClaimsModal] = useState({ open: false, item: null });
   const [claimedItems, setClaimedItems] = useState(new Set());
-
-  useEffect(() => {
-    fetchItems();
-    fetchCurrentUser();
-  }, []);
+  const [showPostForm, setShowPostForm] = useState(false);
 
   const getAxiosConfig = () => {
     const storedToken = localStorage.getItem('token');
@@ -29,7 +25,7 @@ const LostFound = () => {
     return { withCredentials: true };
   };
 
-  const fetchCurrentUser = async () => {
+  const fetchCurrentUser = useCallback(async () => {
     try {
       const cfg = getAxiosConfig();
       const res = await axios.get('http://localhost:4000/auth/current_user', cfg);
@@ -37,9 +33,9 @@ const LostFound = () => {
     } catch (err) {
       console.error('Failed to fetch current user', err);
     }
-  };
+  }, []);
 
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -47,12 +43,17 @@ const LostFound = () => {
       const res = await axios.get('http://localhost:4000/api/lostfound', cfg);
       setItems(res.data || []);
     } catch (err) {
-      console.error('Failed to fetch lostfound items', err);
+      console.error('Failed to fetch lost & found items', err);
       setError('Failed to load items');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchItems();
+    fetchCurrentUser();
+  }, [fetchItems, fetchCurrentUser]);
 
   // unique tags for filter dropdown (case-insensitive)
   const tagOptions = React.useMemo(() => {
@@ -88,6 +89,7 @@ const LostFound = () => {
       });
       setForm({ tag: '', location: '', description: '', image: null });
       setPreview(null);
+      setShowPostForm(false);
       await fetchItems();
     } catch (err) {
       console.error('Post failed', err);
@@ -154,58 +156,22 @@ const LostFound = () => {
 
   return (
     <div className="lostfound-container">
-      <div className="lf-left">
-        <h2>Post an item</h2>
-        <form className="lf-form" onSubmit={handleSubmit}>
-          <label>
-            Tag
-            <select name="tag" value={form.tag} onChange={handleChange} required>
-              <option value="">Select Tag</option>
-              <option value="Watch">Watch</option>
-              <option value="Ear Pods">Ear Pods</option>
-              <option value="Ear Phones">Ear Phones</option>
-              <option value="id card">ID Card</option>
-              <option value="laptop">Laptop</option>
-              <option value="charger">Charger</option>
-              <option value="others">Others</option>
-            </select>
-          </label>
+      {/* Main content - Posted Items */}
+      <div className="lf-main-content">
+        <div className="lf-header">
+          <h2>Lost & Found Items</h2>
+          <button className="btn-primary btn-post-item" onClick={() => setShowPostForm(true)}>
+            + Post an Item
+          </button>
+        </div>
 
-          <label>
-            Location
-            <input type="text" name="location" placeholder="Location found" value={form.location} onChange={handleChange} required />
-          </label>
-
-          <label>
-            Description
-            <textarea name="description" placeholder="Description" value={form.description} onChange={handleChange} required />
-          </label>
-
-          <label className="file-input">
-            Photo (optional)
-            <input type="file" name="image" accept="image/*" onChange={handleChange} />
-          </label>
-
-          {preview && (
-            <div className="preview">
-              <img src={preview} alt="preview" />
-            </div>
-          )}
-
-          <div className="form-actions">
-            <button type="submit" className="btn-primary" disabled={isPosting}>{isPosting ? 'Posting...' : 'Post Item'}</button>
-            <button type="button" className="btn-secondary" onClick={() => { setForm({ tag: '', location: '', description: '', image: null }); setPreview(null); }}>Reset</button>
-          </div>
-          {error && <p className="error">{error}</p>}
-        </form>
-      </div>
-
-      <div className="lf-right">
-        <h2>Posted Items</h2>
         {isLoading ? (
           <p>Loading items...</p>
         ) : items.length === 0 ? (
-          <p>No items posted yet.</p>
+          <div className="lf-empty-state">
+            <p>No items posted yet.</p>
+            <button className="btn-primary" onClick={() => setShowPostForm(true)}>Post the first item</button>
+          </div>
         ) : (
           <>
             <div className="lf-filter-bar">
@@ -248,6 +214,54 @@ const LostFound = () => {
           </>
         )}
       </div>
+
+      {/* Post Item Modal */}
+      {showPostForm && (
+        <Modal title="Post an Item" onClose={() => setShowPostForm(false)}>
+          <form className="lf-form" onSubmit={handleSubmit}>
+            <label>
+              Tag
+              <select name="tag" value={form.tag} onChange={handleChange} required>
+                <option value="">Select Tag</option>
+                <option value="Watch">Watch</option>
+                <option value="Ear Pods">Ear Pods</option>
+                <option value="Ear Phones">Ear Phones</option>
+                <option value="id card">ID Card</option>
+                <option value="laptop">Laptop</option>
+                <option value="charger">Charger</option>
+                <option value="others">Others</option>
+              </select>
+            </label>
+
+            <label>
+              Location
+              <input type="text" name="location" placeholder="Location found" value={form.location} onChange={handleChange} required />
+            </label>
+
+            <label>
+              Description
+              <textarea name="description" placeholder="Description" value={form.description} onChange={handleChange} required />
+            </label>
+
+            <label className="file-input">
+              Photo (optional)
+              <input type="file" name="image" accept="image/*" onChange={handleChange} />
+            </label>
+
+            {preview && (
+              <div className="preview">
+                <img src={preview} alt="preview" />
+              </div>
+            )}
+
+            <div className="modal-footer">
+              <button type="submit" className="btn-primary" disabled={isPosting}>{isPosting ? 'Posting...' : 'Post Item'}</button>
+              <button type="button" className="btn-secondary" onClick={() => { setForm({ tag: '', location: '', description: '', image: null }); setPreview(null); setShowPostForm(false); }}>Cancel</button>
+            </div>
+            {error && <p className="error">{error}</p>}
+          </form>
+        </Modal>
+      )}
 
       {/* Claim Modal */}
       {claimModal.open && (

@@ -1,14 +1,12 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import LostFound from './components/LostFound';
 import Navbar from './components/Navbar';
 import Events from './components/Events';
 import Feedback from './components/Feedback';
-import Chatbot from './components/Chatbot';
-import BotpressChat from './components/BotpressChat';
 import ProtectedRoute from './components/ProtectedRoute';
+import { ToastProvider } from './components/ToastContext';
 
 function App() {
   useEffect(() => {
@@ -33,7 +31,8 @@ function App() {
     }
   }, []);
   return (
-   <Router>
+   <ToastProvider>
+    <Router>
       <Navbar />
       <Routes>
         {/* Public Route */}
@@ -71,6 +70,7 @@ function App() {
       
       {/* Botpress chatbot loaded via index.html */}
     </Router>
+   </ToastProvider>
   );
 }
 

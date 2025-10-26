@@ -62,6 +62,10 @@ const Navbar = () => {
     // clear local token first
     localStorage.removeItem('token');
     setUser(null);
+    
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new CustomEvent('userLogout'));
+    
     // call backend logout to clear cookie/session and redirect to frontend root
     // use fetch so we can remain in SPA and then navigate
     fetch('http://localhost:4000/auth/logout', { credentials: 'include' })

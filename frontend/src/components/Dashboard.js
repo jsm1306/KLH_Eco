@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../index.css';
 
@@ -17,31 +17,8 @@ const Dashboard = () => {
   const [recentFeedback, setRecentFeedback] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
-    setLoading(true);
-    try {
-      // Fetch current user
-      await fetchCurrentUser();
-      
-      // Fetch all data in parallel
-      await Promise.all([
-        fetchUpcomingEvents(),
-        fetchRecentLostFound(),
-        fetchRecentFeedback(),
-        fetchClubs()
-      ]);
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchCurrentUser = async () => {
+  // Fetch functions defined before useEffect
+  const fetchCurrentUser = useCallback(async () => {
     const token = localStorage.getItem('token');
     if (!token) return;
 
@@ -57,9 +34,9 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Error fetching current user:', error);
     }
-  };
+  }, []);
 
-  const fetchUpcomingEvents = async () => {
+  const fetchUpcomingEvents = useCallback(async () => {
     const token = localStorage.getItem('token');
     try {
       const res = await fetch('http://localhost:4000/api/events', {
@@ -67,26 +44,24 @@ const Dashboard = () => {
       });
       if (res.ok) {
         const events = await res.json();
-        console.log('Fetched events:', events); // Debug log
+        console.log('Fetched events:', events);
         
-        // Filter upcoming events and sort by date
         const upcoming = events
           .filter(e => new Date(e.date) >= new Date())
           .sort((a, b) => new Date(a.date) - new Date(b.date))
           .slice(0, 5);
         setUpcomingEvents(upcoming);
         
-        // Count all upcoming events (not just the 5 displayed)
         const upcomingCount = events.filter(e => new Date(e.date) >= new Date()).length;
-        console.log('Upcoming events count:', upcomingCount); // Debug log
+        console.log('Upcoming events count:', upcomingCount);
         setStats(prev => ({ ...prev, upcomingEvents: upcomingCount }));
       }
     } catch (error) {
       console.error('Error fetching events:', error);
     }
-  };
+  }, []);
 
-  const fetchRecentLostFound = async () => {
+  const fetchRecentLostFound = useCallback(async () => {
     const token = localStorage.getItem('token');
     try {
       const res = await fetch('http://localhost:4000/api/lostfound', {
@@ -94,22 +69,20 @@ const Dashboard = () => {
       });
       if (res.ok) {
         const items = await res.json();
-        console.log('Fetched lost & found items:', items); // Debug log
+        console.log('Fetched lost & found items:', items);
         
-        // Get recent items (last 6)
         const recent = items.slice(0, 6);
         setRecentLostFound(recent);
         
-        // Count total lost & found items in the system
-        console.log('Total lost & found count:', items.length); // Debug log
+        console.log('Total lost & found count:', items.length);
         setStats(prev => ({ ...prev, recentLostFound: items.length }));
       }
     } catch (error) {
       console.error('Error fetching lost & found:', error);
     }
-  };
+  }, []);
 
-  const fetchRecentFeedback = async () => {
+  const fetchRecentFeedback = useCallback(async () => {
     const token = localStorage.getItem('token');
     if (!token) return;
 
@@ -119,21 +92,20 @@ const Dashboard = () => {
       });
       if (res.ok) {
         const feedback = await res.json();
-        console.log('Fetched feedback:', feedback); // Debug log
+        console.log('Fetched feedback:', feedback);
         
         const recent = feedback.slice(0, 5);
         setRecentFeedback(recent);
         
-        // Count total feedback in the system
-        console.log('Total feedback count:', feedback.length); // Debug log
+        console.log('Total feedback count:', feedback.length);
         setStats(prev => ({ ...prev, pendingFeedback: feedback.length }));
       }
     } catch (error) {
       console.error('Error fetching feedback:', error);
     }
-  };
+  }, []);
 
-  const fetchClubs = async () => {
+  const fetchClubs = useCallback(async () => {
     const token = localStorage.getItem('token');
     try {
       const res = await fetch('http://localhost:4000/api/clubs', {
@@ -141,14 +113,67 @@ const Dashboard = () => {
       });
       if (res.ok) {
         const clubs = await res.json();
-        console.log('Fetched clubs:', clubs); // Debug log
-        console.log('Total clubs count:', clubs.length); // Debug log
+        console.log('Fetched clubs:', clubs);
+        console.log('Total clubs count:', clubs.length);
         setStats(prev => ({ ...prev, totalClubs: clubs.length }));
       }
     } catch (error) {
       console.error('Error fetching clubs:', error);
     }
-  };
+  }, []);
+
+  const fetchDashboardData = useCallback(async () => {
+    setLoading(true);
+    try {
+      await fetchCurrentUser();
+      
+      await Promise.all([
+        fetchUpcomingEvents(),
+        fetchRecentLostFound(),
+        fetchRecentFeedback(),
+        fetchClubs()
+      ]);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchCurrentUser, fetchUpcomingEvents, fetchRecentLostFound, fetchRecentFeedback, fetchClubs]);
+
+  useEffect(() => {
+    fetchDashboardData();
+    
+    // Listen for storage changes (logout from different tab)
+    const handleStorageChange = (e) => {
+      if (e.key === 'token') {
+        if (!e.newValue) {
+          // Token was removed (logout)
+          setCurrentUser(null);
+          setIsAdmin(false);
+        } else {
+          // Token was added/changed (login)
+          fetchDashboardData();
+        }
+      }
+    };
+    
+    // Listen for custom logout event (logout from same tab)
+    const handleUserLogout = () => {
+      setCurrentUser(null);
+      setIsAdmin(false);
+      // Don't clear stats and data - they should remain visible
+      // Only re-fetch feedback since it's user-specific
+      fetchRecentFeedback();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('userLogout', handleUserLogout);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('userLogout', handleUserLogout);
+    };
+  }, [fetchDashboardData, fetchRecentFeedback]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
