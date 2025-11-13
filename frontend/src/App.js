@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
 import LostFound from './components/LostFound';
+import Login from './components/Login';
 import Navbar from './components/Navbar';
 import Events from './components/Events';
 import Feedback from './components/Feedback';
@@ -38,7 +39,10 @@ function App() {
         {/* Public Route */}
         <Route path="/dashboard" element={<Dashboard />} />
 
-        {/* Protected Routes */}
+  {/* Login route */}
+  <Route path="/login" element={<Login />} />
+
+        {/* Protected pages: require login to view */}
         <Route
           path="/events"
           element={

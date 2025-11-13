@@ -12,15 +12,15 @@ const ProtectedRoute = ({ children }) => {
   useEffect(() => {
     // if no token, show toast notification (only once)
     if (!token && !hasShownToast.current) {
-      const pageName = location.pathname.replace('/', '').replace(/^\w/, c => c.toUpperCase()) || 'page';
-      addToast(`Please login to access ${pageName}`, 'warning', 4000);
+      // Show the exact style of message requested by user
+      addToast('You are unauthenticated, please login through college mail', 'warning', 4000);
       hasShownToast.current = true;
     }
   }, [token, addToast, location.pathname]);
 
-  // if no token, redirect to dashboard
+  // if no token, redirect to login page
   if (!token) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
   return children;

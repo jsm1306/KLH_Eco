@@ -2,6 +2,8 @@ import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import Modal from './Modal.js';
 import '../index.css';
+import { useToast } from './ToastContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const LostFound = () => {
   const [items, setItems] = useState([]);
@@ -154,13 +156,27 @@ const LostFound = () => {
     }
   };
 
+  const toast = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleOpenPost = () => {
+    if (currentUser) {
+      setShowPostForm(true);
+    } else {
+      // ask user to login first
+      toast.addToast('Please login to post an item', 'warning', 4000);
+      navigate('/login', { state: { from: location.pathname } });
+    }
+  };
+
   return (
     <div className="lostfound-container">
       {/* Main content - Posted Items */}
       <div className="lf-main-content">
         <div className="lf-header">
           <h2>Lost & Found Items</h2>
-          <button className="btn-primary btn-post-item" onClick={() => setShowPostForm(true)}>
+          <button className="btn-primary btn-post-item" onClick={handleOpenPost}>
             + Post an Item
           </button>
         </div>
@@ -170,7 +186,7 @@ const LostFound = () => {
         ) : items.length === 0 ? (
           <div className="lf-empty-state">
             <p>No items posted yet.</p>
-            <button className="btn-primary" onClick={() => setShowPostForm(true)}>Post the first item</button>
+            <button className="btn-primary" onClick={handleOpenPost}>Post the first item</button>
           </div>
         ) : (
           <>

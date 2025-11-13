@@ -1446,7 +1446,7 @@ code {
 
 .toast-container {
   position: fixed;
-  top: 80px;
+  bottom: 20px;
   right: 20px;
   z-index: 9999;
   display: flex;
@@ -1539,6 +1539,7 @@ code {
   .toast-container {
     left: 20px;
     right: 20px;
+    bottom: 20px;
     max-width: none;
   }
   

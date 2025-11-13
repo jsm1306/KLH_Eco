@@ -8,7 +8,9 @@ const Events = () => {
   const [clubEvents, setClubEvents] = useState([]);
   const [allEvents, setAllEvents] = useState([]);
   const [eventsByClub, setEventsByClub] = useState({});
-  const [viewMode, setViewMode] = useState('all'); // 'all' | 'club'
+  const [viewMode, setViewMode] = useState('all'); // 'all' | 'past' | 'club'
+  // per-club mode: 'current' | 'past'
+  const [showClubMode, setShowClubMode] = useState({});
   const [loadingClubs, setLoadingClubs] = useState(false);
   const [loadingEvents, setLoadingEvents] = useState(false);
   // User state for role-based access
@@ -286,6 +288,18 @@ const Events = () => {
     }
   };
 
+  // when selecting a club from sidebar, switch to club view
+  const selectClubAndView = async (club) => {
+    await selectClub(club);
+    setViewMode('club');
+    // ensure club mode defaults to 'current'
+    setShowClubMode((prev) => ({ ...prev, [club._id]: prev[club._id] || 'current' }));
+  };
+
+  const setClubMode = (clubId, mode) => {
+    setShowClubMode((prev) => ({ ...prev, [clubId]: mode }));
+  };
+
   const createEvent = async (e) => {
     e.preventDefault();
     if (!newTitle || !newClubId) return alert('Please provide at least a title and select a club');
@@ -354,7 +368,7 @@ const Events = () => {
         ) : (
           <ul className="clubs-list">
             {clubs.map((c) => (
-              <li key={c._id} className={`club-item ${selectedClub && selectedClub._id === c._id ? 'active' : ''}`} onClick={() => selectClub(c)}>
+              <li key={c._id} className={`club-item ${selectedClub && selectedClub._id === c._id ? 'active' : ''}`} onClick={() => selectClubAndView(c)}>
                 <div className="club-name">{c.name} <span style={{fontSize:12, color:'#6b7280', marginLeft:8}}>({eventsByClub[c._id]?.length || 0})</span></div>
                 {c.description && <div className="club-desc">{c.description}</div>}
               </li>
@@ -365,8 +379,8 @@ const Events = () => {
 
       <main className="events-main">
         <div className="events-view-toggle">
-          <button className={`btn-small ${viewMode === 'all' ? 'active' : ''}`} onClick={() => setViewMode('all')}>All Events</button>
-          <button className={`btn-small ${viewMode === 'club' ? 'active' : ''}`} onClick={() => setViewMode('club')}>By Club</button>
+          <button className={`btn-small ${viewMode === 'all' ? 'active' : ''}`} onClick={() => { setSelectedClub(null); setViewMode('all'); }}>All Events</button>
+          <button className={`btn-small ${viewMode === 'past' ? 'active' : ''}`} onClick={() => { setSelectedClub(null); setViewMode('past'); }}>Past Events</button>
           {isAdmin && (
             <div style={{ marginLeft: 'auto' }}>
               <button
@@ -478,70 +492,165 @@ const Events = () => {
               <p>No events available.</p>
             ) : (
               <div>
-                {/* Group events by club using clubs array order */}
-                {clubs.map((club) => (
-                  <section key={club._id} style={{ marginBottom: 18 }}>
-                    <h3 style={{ marginBottom: 8 }}>{club.name} <small style={{ color:'#6b7280' }}>({eventsByClub[club._id]?.length || 0})</small></h3>
-                    <div className="events-grid">
-                      {(eventsByClub[club._id] || []).map((ev) => (
-                        <article key={ev._id} className="event-card">
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                            <div style={{ flex: 1 }}>
-                              <h3 className="event-title">{ev.title}</h3>
-                              <p className="event-desc">{ev.description}</p>
-                              <p className="event-meta"><strong>Date:</strong> {ev.date ? new Date(ev.date).toLocaleString() : 'TBD'}</p>
-                              <p className="event-meta"><strong>Location:</strong> {ev.location || 'TBD'}</p>
-                            </div>
-                            {isAdmin && (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 12 }}>
-                                <button className="btn-small btn-edit" onClick={() => startEdit(ev)}>Edit</button>
-                                <button className="btn-small btn-delete" onClick={() => deleteEventStart(ev._id)}>Delete</button>
+                {/* Show upcoming events grouped by club */}
+                {(() => {
+                  const now = Date.now();
+                  return clubs.map((club) => {
+                    const clubEvents = (eventsByClub[club._id] || []);
+                    const upcoming = clubEvents.filter(ev => !ev.date || Date.parse(ev.date) >= now);
+                    if (!upcoming.length) return null;
+                    return (
+                      <section key={club._id} style={{ marginBottom: 18 }}>
+                        <h3 style={{ marginBottom: 8 }}>{club.name} <small style={{ color:'#6b7280' }}>({upcoming.length})</small></h3>
+                        <div className="events-grid">
+                          {upcoming.map((ev) => (
+                            <article key={ev._id} className="event-card">
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                                <div style={{ flex: 1 }}>
+                                  <h3 className="event-title">{ev.title}</h3>
+                                  <p className="event-desc">{ev.description}</p>
+                                  <p className="event-meta"><strong>Date:</strong> {ev.date ? new Date(ev.date).toLocaleString() : 'TBD'}</p>
+                                  <p className="event-meta"><strong>Location:</strong> {ev.location || 'TBD'}</p>
+                                </div>
+                                {isAdmin && (
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 12 }}>
+                                    <button className="btn-small btn-edit" onClick={() => startEdit(ev)}>Edit</button>
+                                    <button className="btn-small btn-delete" onClick={() => deleteEventStart(ev._id)}>Delete</button>
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
-                        </article>
-                      ))}
-                    </div>
-                  </section>
-                ))}
+                            </article>
+                          ))}
+                        </div>
+                      </section>
+                    );
+                  });
+                })()}
 
-                {/* Events without a club */}
-                {(eventsByClub['__noclub'] || []).length > 0 && (
-                  <section>
-                    <h3>Other Events</h3>
-                    <div className="events-grid">
-                      {(eventsByClub['__noclub'] || []).map((ev) => (
-                        <article key={ev._id} className="event-card">
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                            <div style={{ flex: 1 }}>
-                              <h3 className="event-title">{ev.title}</h3>
-                              <p className="event-desc">{ev.description}</p>
-                              <p className="event-meta"><strong>Date:</strong> {ev.date ? new Date(ev.date).toLocaleString() : 'TBD'}</p>
-                              <p className="event-meta"><strong>Location:</strong> {ev.location || 'TBD'}</p>
-                            </div>
-                            {isAdmin && (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 12 }}>
-                                <button className="btn-small btn-edit" onClick={() => startEdit(ev)}>Edit</button>
-                                <button className="btn-small btn-delete" onClick={() => deleteEventStart(ev._id)}>Delete</button>
+                {/* Upcoming events without a club */}
+                {(() => {
+                  const now = Date.now();
+                  const noclubUpcoming = (eventsByClub['__noclub'] || []).filter(ev => !ev.date || Date.parse(ev.date) >= now);
+                  if (!noclubUpcoming.length) return null;
+                  return (
+                    <section>
+                      <h3>Other Events</h3>
+                      <div className="events-grid">
+                        {noclubUpcoming.map((ev) => (
+                          <article key={ev._id} className="event-card">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                              <div style={{ flex: 1 }}>
+                                <h3 className="event-title">{ev.title}</h3>
+                                <p className="event-desc">{ev.description}</p>
+                                <p className="event-meta"><strong>Date:</strong> {ev.date ? new Date(ev.date).toLocaleString() : 'TBD'}</p>
+                                <p className="event-meta"><strong>Location:</strong> {ev.location || 'TBD'}</p>
                               </div>
-                            )}
-                          </div>
-                        </article>
-                      ))}
-                    </div>
-                  </section>
-                )}
+                              {isAdmin && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 12 }}>
+                                  <button className="btn-small btn-edit" onClick={() => startEdit(ev)}>Edit</button>
+                                  <button className="btn-small btn-delete" onClick={() => deleteEventStart(ev._id)}>Delete</button>
+                                </div>
+                              )}
+                            </div>
+                          </article>
+                        ))}
+                      </div>
+                    </section>
+                  );
+                })()}
+
               </div>
             )}
+          </div>
+        ) : viewMode === 'past' ? (
+          <div>
+            <h2>Past Events</h2>
+            {(() => {
+              const now = Date.now();
+              // collect past events grouped by club
+              const clubPastSections = clubs.map((club) => {
+                const clubEvents = (eventsByClub[club._id] || []);
+                const past = clubEvents.filter(ev => ev.date && Date.parse(ev.date) < now);
+                if (!past.length) return null;
+                return (
+                  <section key={`past-${club._id}`} style={{ marginBottom: 18 }}>
+                    <h3 style={{ marginBottom: 8 }}>{club.name} <small style={{ color:'#6b7280' }}>({past.length})</small></h3>
+                    <div className="events-grid">
+                      {past.map((ev) => (
+                        <article key={ev._id} className="event-card">
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                            <div style={{ flex: 1 }}>
+                              <h3 className="event-title">{ev.title}</h3>
+                              <p className="event-desc">{ev.description}</p>
+                              <p className="event-meta"><strong>Date:</strong> {ev.date ? new Date(ev.date).toLocaleString() : 'TBD'}</p>
+                              <p className="event-meta"><strong>Location:</strong> {ev.location || 'TBD'}</p>
+                            </div>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </section>
+                );
+              });
+
+              // past events without club
+              const noclubPast = (eventsByClub['__noclub'] || []).filter(ev => ev.date && Date.parse(ev.date) < now);
+
+              const hasAnyPast = clubPastSections.some(Boolean) || noclubPast.length > 0;
+              if (!hasAnyPast) return <p>No past events.</p>;
+
+              return (
+                <div>
+                  {clubPastSections}
+                  {noclubPast.length > 0 && (
+                    <section>
+                      <h3>Other Past Events</h3>
+                      <div className="events-grid">
+                        {noclubPast.map((ev) => (
+                          <article key={ev._id} className="event-card">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                              <div style={{ flex: 1 }}>
+                                <h3 className="event-title">{ev.title}</h3>
+                                <p className="event-desc">{ev.description}</p>
+                                <p className="event-meta"><strong>Date:</strong> {ev.date ? new Date(ev.date).toLocaleString() : 'TBD'}</p>
+                                <p className="event-meta"><strong>Location:</strong> {ev.location || 'TBD'}</p>
+                              </div>
+                            </div>
+                          </article>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         ) : (
           !selectedClub ? (
             <div className="events-empty">Select a club to view its events</div>
           ) : (
             <div>
-              <div className="club-header">
-                <h2>{selectedClub.name}</h2>
-                {selectedClub.description && <p className="club-desc-large">{selectedClub.description}</p>}
+              <div className="club-header" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <h2>{selectedClub.name}</h2>
+                  {selectedClub.description && <p className="club-desc-large">{selectedClub.description}</p>}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      className={`btn-small ${ (showClubMode[selectedClub._id] || 'current') === 'current' ? 'active' : '' }`}
+                      onClick={() => setClubMode(selectedClub._id, 'current')}
+                    >
+                      Current
+                    </button>
+                    <button
+                      className={`btn-small ${ (showClubMode[selectedClub._id] || 'current') === 'past' ? 'active' : '' }`}
+                      onClick={() => setClubMode(selectedClub._id, 'past')}
+                    >
+                      Past
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {loadingEvents ? (
@@ -549,26 +658,61 @@ const Events = () => {
               ) : clubEvents.length === 0 ? (
                 <p>No events scheduled for this club.</p>
               ) : (
-                <div className="events-grid">
-                  {clubEvents.map((ev) => (
-                    <article key={ev._id} className="event-card">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                        <div style={{ flex: 1 }}>
-                          <h3 className="event-title">{ev.title}</h3>
-                          <p className="event-desc">{ev.description}</p>
-                          <p className="event-meta"><strong>Date:</strong> {ev.date ? new Date(ev.date).toLocaleString() : 'TBD'}</p>
-                          <p className="event-meta"><strong>Location:</strong> {ev.location || 'TBD'}</p>
-                        </div>
-                        {isAdmin && (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 12 }}>
-                            <button className="btn-small btn-edit" onClick={() => startEdit(ev)}>Edit</button>
-                            <button className="btn-small btn-delete" onClick={() => deleteEventStart(ev._id)}>Delete</button>
-                          </div>
-                        )}
+                (() => {
+                  const now = Date.now();
+                  const upcoming = clubEvents.filter(ev => !ev.date || Date.parse(ev.date) >= now);
+                  const past = clubEvents.filter(ev => ev.date && Date.parse(ev.date) < now);
+                  const mode = (showClubMode[selectedClub._id] || 'current');
+
+                  // Render only the section matching the selected club mode
+                  if (mode === 'current') {
+                    if (!upcoming.length) return <p>No upcoming events for this club.</p>;
+                    return (
+                      <div className="events-grid">
+                        {upcoming.map((ev) => (
+                          <article key={ev._id} className="event-card">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                              <div style={{ flex: 1 }}>
+                                <h3 className="event-title">{ev.title}</h3>
+                                <p className="event-desc">{ev.description}</p>
+                                <p className="event-meta"><strong>Date:</strong> {ev.date ? new Date(ev.date).toLocaleString() : 'TBD'}</p>
+                                <p className="event-meta"><strong>Location:</strong> {ev.location || 'TBD'}</p>
+                              </div>
+                              {isAdmin && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 12 }}>
+                                  <button className="btn-small btn-edit" onClick={() => startEdit(ev)}>Edit</button>
+                                  <button className="btn-small btn-delete" onClick={() => deleteEventStart(ev._id)}>Delete</button>
+                                </div>
+                              )}
+                            </div>
+                          </article>
+                        ))}
                       </div>
-                    </article>
-                  ))}
-                </div>
+                    );
+                  }
+
+                  // past mode
+                  if (!past.length) return <p>No past events for this club.</p>;
+                  return (
+                    <div>
+                      <h4 style={{ marginTop: 0, marginBottom: 12 }}>Past events</h4>
+                      <div className="events-grid">
+                        {past.map((ev) => (
+                          <article key={ev._id} className="event-card">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                              <div style={{ flex: 1 }}>
+                                <h3 className="event-title">{ev.title}</h3>
+                                <p className="event-desc">{ev.description}</p>
+                                <p className="event-meta"><strong>Date:</strong> {ev.date ? new Date(ev.date).toLocaleString() : 'TBD'}</p>
+                                <p className="event-meta"><strong>Location:</strong> {ev.location || 'TBD'}</p>
+                              </div>
+                            </div>
+                          </article>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()
               )}
             </div>
           )
