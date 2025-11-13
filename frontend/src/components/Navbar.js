@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../index.css';
+import API_BASE from '../api/base';
 
 const Navbar = () => {
   const [user, setUser] = useState(null);
@@ -21,7 +22,7 @@ const Navbar = () => {
         },
         credentials: 'include',
       };
-  const res = await fetch('https://klh-eco.onrender.com/auth/current_user', opts);
+        const res = await fetch(`${API_BASE}/auth/current_user`, opts);
       if (!res.ok) {
         setUser(null);
         return;
@@ -41,7 +42,7 @@ const Navbar = () => {
       try {
         const storedToken = localStorage.getItem('token');
         if (!storedToken) return;
-  const res = await fetch('https://klh-eco.onrender.com/api/notifications', {
+          const res = await fetch(`${API_BASE}/api/notifications`, {
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${storedToken}` },
           credentials: 'include',
         });
@@ -79,7 +80,7 @@ const Navbar = () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) return;
-  const res = await fetch('https://klh-eco.onrender.com/api/notifications', { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+          const res = await fetch(`${API_BASE}/api/notifications`, { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
         if (!res.ok) return;
         const data = await res.json();
         const unread = data.filter(n => !n.read).length;
@@ -113,7 +114,7 @@ const Navbar = () => {
         setUnreadCount(0);
         return;
       }
-  fetch('https://klh-eco.onrender.com/api/notifications', {
+        fetch(`${API_BASE}/api/notifications`, {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${storedToken}` },
         credentials: 'include',
       })
@@ -159,7 +160,7 @@ const Navbar = () => {
     
     // call backend logout to clear cookie/session and redirect to frontend root
     // use fetch so we can remain in SPA and then navigate
-  fetch('https://klh-eco.onrender.com/auth/logout', { credentials: 'include' })
+      fetch(`${API_BASE}/auth/logout`, { credentials: 'include' })
       .then(() => {
         navigate('/');
       })
@@ -168,7 +169,7 @@ const Navbar = () => {
 
   const handleLogin = () => {
     // Start OAuth flow by redirecting to backend
-  window.location.href = 'https://klh-eco.onrender.com/auth/google';
+    window.location.href = `${API_BASE}/auth/google`;
   };
 
   return (

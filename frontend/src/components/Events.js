@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Modal from './Modal';
 import '../index.css';
+import API_BASE from '../api/base';
 
 const Events = () => {
   const [clubs, setClubs] = useState([]);
@@ -50,7 +51,7 @@ const Events = () => {
         },
         credentials: 'include',
       };
-  const res = await fetch('https://klh-eco.onrender.com/auth/current_user', opts);
+  const res = await fetch(`${API_BASE}/auth/current_user`, opts);
       if (!res.ok) {
         setCurrentUser(null);
         setIsAdmin(false);
@@ -81,7 +82,7 @@ const Events = () => {
     // fetch all events across clubs
     const fetchAll = async () => {
       try {
-  const res = await fetch('https://klh-eco.onrender.com/api/events');
+    const res = await fetch(`${API_BASE}/api/events`);
         const data = await res.json();
         setAllEvents(data || []);
         // build map clubId -> events
@@ -107,7 +108,7 @@ const Events = () => {
   const fetchClubs = async () => {
     setLoadingClubs(true);
     try {
-  const res = await fetch('https://klh-eco.onrender.com/api/clubs');
+  const res = await fetch(`${API_BASE}/api/clubs`);
       const data = await res.json();
       setClubs(data || []);
     } catch (err) {
@@ -140,7 +141,7 @@ const Events = () => {
     const cid = ev.club?._id || ev.club || '';
     setEditClubId(cid);
   // prefill image preview if event has image
-  setEditImagePreview(ev.image ? `https://klh-eco.onrender.com/${ev.image}` : null);
+  setEditImagePreview(ev.image ? `${API_BASE}/${ev.image}` : null);
   setEditImageFile(null);
     // ensure create form is closed
     setShowCreateForm(false);
@@ -173,7 +174,7 @@ const Events = () => {
       // If a new file was selected, append it
       if (editImageFile) form.append('image', editImageFile);
 
-  const res = await fetch(`https://klh-eco.onrender.com/api/events/${editingEvent._id}`, {
+  const res = await fetch(`${API_BASE}/api/events/${editingEvent._id}`, {
         method: 'PUT',
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -248,7 +249,7 @@ const Events = () => {
     setShowConfirm(false);
     try {
       const token = localStorage.getItem('token');
-  const res = await fetch(`https://klh-eco.onrender.com/api/events/${id}`, {
+  const res = await fetch(`${API_BASE}/api/events/${id}`, {
         method: 'DELETE',
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -286,7 +287,7 @@ const Events = () => {
         setClubEvents(eventsByClub[club._id]);
       } else {
         // fetch club details (includes events) from server
-  const res = await fetch(`https://klh-eco.onrender.com/api/clubs/${club._id}`);
+  const res = await fetch(`${API_BASE}/api/clubs/${club._id}`);
         const data = await res.json();
         setClubEvents(data.events || []);
       }
@@ -323,7 +324,7 @@ const Events = () => {
       form.append('clubId', newClubId);
       if (newImageFile) form.append('image', newImageFile);
 
-  const res = await fetch('https://klh-eco.onrender.com/api/events', {
+  const res = await fetch(`${API_BASE}/api/events`, {
         method: 'POST',
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -381,7 +382,7 @@ const Events = () => {
     setSubscribing(prev => ({ ...prev, [ev._id]: true }));
     try {
       const token = localStorage.getItem('token');
-  const res = await fetch(`https://klh-eco.onrender.com/api/events/${ev._id}/subscribe`, {
+  const res = await fetch(`${API_BASE}/api/events/${ev._id}/subscribe`, {
         method: 'POST',
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -416,7 +417,7 @@ const Events = () => {
     setSubscribing(prev => ({ ...prev, [ev._id]: true }));
     try {
       const token = localStorage.getItem('token');
-  const res = await fetch(`https://klh-eco.onrender.com/api/events/${ev._id}/unsubscribe`, {
+  const res = await fetch(`${API_BASE}/api/events/${ev._id}/unsubscribe`, {
         method: 'POST',
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -617,7 +618,7 @@ const Events = () => {
                             <article key={ev._id} className="event-card">
                               <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                                 {ev.image && (
-                                  <img src={`https://klh-eco.onrender.com/${ev.image}`} alt={ev.title} className="event-media" />
+                                  <img src={`${API_BASE}/${ev.image}`} alt={ev.title} className="event-media" />
                                 )}
                                 <div style={{ flex: 1 }} className="event-body">
                                   <h3 className="event-title">{ev.title}</h3>
@@ -663,7 +664,7 @@ const Events = () => {
                           <article key={ev._id} className="event-card">
                             <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                               {ev.image && (
-                                <img src={`https://klh-eco.onrender.com/${ev.image}`} alt={ev.title} className="event-media" />
+                                <img src={`${API_BASE}/${ev.image}`} alt={ev.title} className="event-media" />
                               )}
                               <div style={{ flex: 1 }} className="event-body">
                                 <h3 className="event-title">{ev.title}</h3>
@@ -716,7 +717,7 @@ const Events = () => {
                         <article key={ev._id} className="event-card">
                           <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                             {ev.image && (
-                              <img src={`https://klh-eco.onrender.com/${ev.image}`} alt={ev.title} className="event-media" />
+                              <img src={`${API_BASE}/${ev.image}`} alt={ev.title} className="event-media" />
                             )}
                             <div style={{ flex: 1 }} className="event-body">
                               <h3 className="event-title">{ev.title}</h3>
@@ -759,7 +760,7 @@ const Events = () => {
                           <article key={ev._id} className="event-card">
                             <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                               {ev.image && (
-                                <img src={`https://klh-eco.onrender.com/${ev.image}`} alt={ev.title} className="event-media" />
+                                <img src={`${API_BASE}/${ev.image}`} alt={ev.title} className="event-media" />
                               )}
                               <div style={{ flex: 1 }} className="event-body">
                                 <h3 className="event-title">{ev.title}</h3>
@@ -834,9 +835,9 @@ const Events = () => {
                         {upcoming.map((ev) => (
                           <article key={ev._id} className="event-card">
                             <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                              {ev.image && (
-                                <img src={`https://klh-eco.onrender.com/${ev.image}`} alt={ev.title} className="event-media" />
-                              )}
+                                {ev.image && (
+                                  <img src={`${API_BASE}/${ev.image}`} alt={ev.title} className="event-media" />
+                                )}
                               <div style={{ flex: 1 }} className="event-body">
                                 <h3 className="event-title">{ev.title}</h3>
                                 <p className="event-desc">{ev.description}</p>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import '../index.css';
+import API_BASE from '../api/base';
 import { useNavigate } from 'react-router-dom';
 
 const Notifications = () => {
@@ -10,7 +11,7 @@ const Notifications = () => {
   const load = async () => {
     try {
       const token = localStorage.getItem('token');
-  const res = await fetch('https://klh-eco.onrender.com/api/notifications', {
+  const res = await fetch(`${API_BASE}/api/notifications`, {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         credentials: 'include',
       });
@@ -29,7 +30,7 @@ const Notifications = () => {
     try {
       const token = localStorage.getItem('token');
       if (!note.read) {
-  await fetch(`https://klh-eco.onrender.com/api/notifications/${note._id}/read`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+  await fetch(`${API_BASE}/api/notifications/${note._id}/read`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
         setNotes(prev => prev.map(n => n._id === note._id ? { ...n, read: true } : n));
         const unread = notes.filter(n => !n.read && n._id !== note._id).length;
         // notify other components (navbar) about change
@@ -44,7 +45,7 @@ const Notifications = () => {
   const markAll = async () => {
     try {
       const token = localStorage.getItem('token');
-  await fetch('https://klh-eco.onrender.com/api/notifications/read-all', { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+  await fetch(`${API_BASE}/api/notifications/read-all`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
       setNotes(prev => prev.map(n => ({ ...n, read: true })));
       // notify navbar that unread count is now zero
       window.dispatchEvent(new CustomEvent('notificationsUpdated', { detail: { unreadCount: 0 } }));

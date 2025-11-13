@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import '../index.css';
+import API_BASE from '../api/base';
 
 const Feedback = () => {
   const [type, setType] = useState('feedback');
@@ -22,7 +23,7 @@ const Feedback = () => {
     if (!token) return;
 
     try {
-  const res = await fetch('https://klh-eco.onrender.com/auth/current_user', {
+  const res = await fetch(`${API_BASE}/auth/current_user`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -44,7 +45,7 @@ const Feedback = () => {
   const fetchRecent = async () => {
     try {
       const cfg = getFetchConfig();
-  const res = await fetch('https://klh-eco.onrender.com/api/feedback', cfg);
+  const res = await fetch(`${API_BASE}/api/feedback`, cfg);
       const data = await res.json();
       setRecent(data.slice(0, 10));
     } catch (err) {
@@ -57,7 +58,7 @@ const Feedback = () => {
     setStatus('sending');
     try {
       const cfg = getFetchConfig();
-  const res = await fetch('https://klh-eco.onrender.com/api/feedback', {
+  const res = await fetch(`${API_BASE}/api/feedback`, {
         method: 'POST',
         ...cfg,
         body: JSON.stringify({ name, email, type, subject, message }),

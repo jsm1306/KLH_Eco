@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from './ToastContext';
+import API_BASE from '../api/base';
 import '../index.css';
 
 const LostFoundClaims = () => {
@@ -15,7 +16,7 @@ const LostFoundClaims = () => {
     setError(null);
     try {
       const token = localStorage.getItem('token');
-  const res = await fetch(`https://klh-eco.onrender.com/api/lostfound/${id}/claims`, {
+  const res = await fetch(`${API_BASE}/api/lostfound/${id}/claims`, {
         headers: { Authorization: token ? `Bearer ${token}` : '' },
         credentials: 'include',
       });
@@ -40,7 +41,7 @@ const LostFoundClaims = () => {
   const handleVerify = async (claimId, status) => {
     try {
       const token = localStorage.getItem('token');
-  const res = await fetch(`https://klh-eco.onrender.com/api/lostfound/${id}/claim/${claimId}/verify`, {
+  const res = await fetch(`${API_BASE}/api/lostfound/${id}/claim/${claimId}/verify`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
         credentials: 'include',

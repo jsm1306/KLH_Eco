@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../index.css';
+import API_BASE from '../api/base';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ const Dashboard = () => {
     if (!token) return;
 
     try {
-  const res = await fetch('https://klh-eco.onrender.com/auth/current_user', {
+      const res = await fetch(`${API_BASE}/auth/current_user`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -39,7 +40,7 @@ const Dashboard = () => {
   const fetchUpcomingEvents = useCallback(async () => {
     const token = localStorage.getItem('token');
     try {
-  const res = await fetch('https://klh-eco.onrender.com/api/events', {
+      const res = await fetch(`${API_BASE}/api/events`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       if (res.ok) {
@@ -64,7 +65,7 @@ const Dashboard = () => {
   const fetchRecentLostFound = useCallback(async () => {
     const token = localStorage.getItem('token');
     try {
-  const res = await fetch('https://klh-eco.onrender.com/api/lostfound', {
+      const res = await fetch(`${API_BASE}/api/lostfound`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       if (res.ok) {
@@ -87,7 +88,7 @@ const Dashboard = () => {
     if (!token) return;
 
     try {
-  const res = await fetch('https://klh-eco.onrender.com/api/feedback', {
+      const res = await fetch(`${API_BASE}/api/feedback`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -108,7 +109,7 @@ const Dashboard = () => {
   const fetchClubs = useCallback(async () => {
     const token = localStorage.getItem('token');
     try {
-  const res = await fetch('https://klh-eco.onrender.com/api/clubs', {
+      const res = await fetch(`${API_BASE}/api/clubs`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       if (res.ok) {
@@ -218,7 +219,7 @@ const Dashboard = () => {
       {bannerEvent && (
         <div className="dashboard-banner" onClick={() => navigate(`/events`)}>
           {bannerEvent.image ? (
-            <img className="banner-image" src={`https://klh-eco.onrender.com/${bannerEvent.image}`} alt={bannerEvent.title} />
+            <img className="banner-image" src={`${API_BASE}/${bannerEvent.image}`} alt={bannerEvent.title} />
           ) : (
             <div className="banner-fallback" />
           )}
@@ -317,7 +318,7 @@ const Dashboard = () => {
               <div key={item._id} className="dashboard-lf-card">
                 {item.image && (
                   <img 
-                    src={`https://klh-eco.onrender.com/${item.image}`} 
+                    src={`${API_BASE}/${item.image}`} 
                     alt={item.itemName}
                     className="lf-thumbnail"
                   />
