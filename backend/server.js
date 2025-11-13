@@ -20,11 +20,13 @@ import feedbackRoutes from "./routes/feedbackRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 
 dotenv.config();
+// Configurable frontend URL for redirects and CORS (set FRONTEND_URL in production)
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 const app = express();
 app.use(cookieParser());
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: FRONTEND_URL,
   credentials: true
 }));
 app.use('/uploads', express.static('uploads'));
@@ -92,7 +94,7 @@ app.use(passport.session());
 
 // Root route to redirect to frontend
 app.get("/", (req, res) => {
-  res.redirect("http://localhost:3000/");
+  res.redirect(`${FRONTEND_URL}/`);
 });
 
 // Multer config for image uploads
@@ -118,7 +120,7 @@ app.get(
     res.cookie('token', token, { httpOnly: true });
     // Log token and redirect URL for debugging
     // Use URL hash to transmit token to frontend (not sent to server on subsequent requests)
-    const redirectUrl = `http://localhost:3000/dashboard#token=${token}`;
+  const redirectUrl = `${FRONTEND_URL}/dashboard#token=${token}`;
     console.log('OAuth callback: issuing token, token length:', token.length, 'redirecting to', redirectUrl);
     // Also include token in redirect URL hash so frontend (in dev) can pick it up when cookies are blocked
     // NOTE: In production you should prefer httpOnly cookie + proper SameSite/Secure settings.
@@ -137,26 +139,26 @@ app.get("/auth/logout", (req, res) => {
           console.error('Error during req.logout:', err);
         }
         // Destroy session store if present
-        if (req.session) {
+          if (req.session) {
           req.session.destroy(() => {
-            res.redirect("http://localhost:3000/");
+            res.redirect(`${FRONTEND_URL}/`);
           });
         } else {
-          res.redirect("http://localhost:3000/");
+          res.redirect(`${FRONTEND_URL}/`);
         }
       });
     } else {
       if (req.session) {
         req.session.destroy(() => {
-          res.redirect("http://localhost:3000/");
+          res.redirect(`${FRONTEND_URL}/`);
         });
       } else {
-        res.redirect("http://localhost:3000/");
+        res.redirect(`${FRONTEND_URL}/`);
       }
     }
-  } catch (err) {
+    } catch (err) {
     console.error('Logout error:', err);
-    res.redirect("http://localhost:3000/");
+    res.redirect(`${FRONTEND_URL}/`);
   }
 });
 

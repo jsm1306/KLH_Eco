@@ -23,7 +23,7 @@ const Dashboard = () => {
     if (!token) return;
 
     try {
-      const res = await fetch('http://localhost:4000/auth/current_user', {
+  const res = await fetch('https://klh-eco.onrender.com/auth/current_user', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -39,7 +39,7 @@ const Dashboard = () => {
   const fetchUpcomingEvents = useCallback(async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:4000/api/events', {
+  const res = await fetch('https://klh-eco.onrender.com/api/events', {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       if (res.ok) {
@@ -64,7 +64,7 @@ const Dashboard = () => {
   const fetchRecentLostFound = useCallback(async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:4000/api/lostfound', {
+  const res = await fetch('https://klh-eco.onrender.com/api/lostfound', {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       if (res.ok) {
@@ -87,7 +87,7 @@ const Dashboard = () => {
     if (!token) return;
 
     try {
-      const res = await fetch('http://localhost:4000/api/feedback', {
+  const res = await fetch('https://klh-eco.onrender.com/api/feedback', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -108,7 +108,7 @@ const Dashboard = () => {
   const fetchClubs = useCallback(async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:4000/api/clubs', {
+  const res = await fetch('https://klh-eco.onrender.com/api/clubs', {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       if (res.ok) {
@@ -218,7 +218,7 @@ const Dashboard = () => {
       {bannerEvent && (
         <div className="dashboard-banner" onClick={() => navigate(`/events`)}>
           {bannerEvent.image ? (
-            <img className="banner-image" src={`http://localhost:4000/${bannerEvent.image}`} alt={bannerEvent.title} />
+            <img className="banner-image" src={`https://klh-eco.onrender.com/${bannerEvent.image}`} alt={bannerEvent.title} />
           ) : (
             <div className="banner-fallback" />
           )}
@@ -317,7 +317,7 @@ const Dashboard = () => {
               <div key={item._id} className="dashboard-lf-card">
                 {item.image && (
                   <img 
-                    src={`http://localhost:4000/${item.image}`} 
+                    src={`https://klh-eco.onrender.com/${item.image}`} 
                     alt={item.itemName}
                     className="lf-thumbnail"
                   />

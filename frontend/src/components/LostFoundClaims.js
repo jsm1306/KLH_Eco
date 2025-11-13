@@ -15,7 +15,7 @@ const LostFoundClaims = () => {
     setError(null);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:4000/api/lostfound/${id}/claims`, {
+  const res = await fetch(`https://klh-eco.onrender.com/api/lostfound/${id}/claims`, {
         headers: { Authorization: token ? `Bearer ${token}` : '' },
         credentials: 'include',
       });
@@ -40,7 +40,7 @@ const LostFoundClaims = () => {
   const handleVerify = async (claimId, status) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:4000/api/lostfound/${id}/claim/${claimId}/verify`, {
+  const res = await fetch(`https://klh-eco.onrender.com/api/lostfound/${id}/claim/${claimId}/verify`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
         credentials: 'include',

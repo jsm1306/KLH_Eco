@@ -22,7 +22,7 @@ const Feedback = () => {
     if (!token) return;
 
     try {
-      const res = await fetch('http://localhost:4000/auth/current_user', {
+  const res = await fetch('https://klh-eco.onrender.com/auth/current_user', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -44,7 +44,7 @@ const Feedback = () => {
   const fetchRecent = async () => {
     try {
       const cfg = getFetchConfig();
-      const res = await fetch('http://localhost:4000/api/feedback', cfg);
+  const res = await fetch('https://klh-eco.onrender.com/api/feedback', cfg);
       const data = await res.json();
       setRecent(data.slice(0, 10));
     } catch (err) {
@@ -57,7 +57,7 @@ const Feedback = () => {
     setStatus('sending');
     try {
       const cfg = getFetchConfig();
-      const res = await fetch('http://localhost:4000/api/feedback', {
+  const res = await fetch('https://klh-eco.onrender.com/api/feedback', {
         method: 'POST',
         ...cfg,
         body: JSON.stringify({ name, email, type, subject, message }),

@@ -30,7 +30,7 @@ const LostFound = () => {
   const fetchCurrentUser = useCallback(async () => {
     try {
       const cfg = getAxiosConfig();
-      const res = await axios.get('http://localhost:4000/auth/current_user', cfg);
+  const res = await axios.get('https://klh-eco.onrender.com/auth/current_user', cfg);
       setCurrentUser(res.data);
     } catch (err) {
       console.error('Failed to fetch current user', err);
@@ -42,7 +42,7 @@ const LostFound = () => {
     setError(null);
     try {
       const cfg = getAxiosConfig();
-      const res = await axios.get('http://localhost:4000/api/lostfound', cfg);
+  const res = await axios.get('https://klh-eco.onrender.com/api/lostfound', cfg);
       setItems(res.data || []);
     } catch (err) {
       console.error('Failed to fetch lost & found items', err);
@@ -85,7 +85,7 @@ const LostFound = () => {
     try {
       const cfg = getAxiosConfig();
       // ensure multipart handled correctly
-      await axios.post('http://localhost:4000/api/lostfound', formData, {
+  await axios.post('https://klh-eco.onrender.com/api/lostfound', formData, {
         ...cfg,
         headers: { ...(cfg.headers || {}), 'Content-Type': 'multipart/form-data' },
       });
@@ -121,7 +121,7 @@ const LostFound = () => {
     if (!claimModal.item || !claimMessage.trim()) return;
     try {
       const cfg = getAxiosConfig();
-      await axios.post(`http://localhost:4000/api/lostfound/${claimModal.item._id}/claim`, { message: claimMessage }, cfg);
+  await axios.post(`https://klh-eco.onrender.com/api/lostfound/${claimModal.item._id}/claim`, { message: claimMessage }, cfg);
       setClaimedItems(prev => new Set([...prev, claimModal.item._id]));
       setClaimModal({ open: false, item: null });
       setClaimMessage('');
@@ -136,7 +136,7 @@ const LostFound = () => {
     if (!claimsModal.item) return;
     try {
       const cfg = getAxiosConfig();
-      await axios.put(`http://localhost:4000/api/lostfound/${claimsModal.item._id}/claim/${claimId}/verify`, { status }, cfg);
+  await axios.put(`https://klh-eco.onrender.com/api/lostfound/${claimsModal.item._id}/claim/${claimId}/verify`, { status }, cfg);
       setClaimsModal({ open: false, item: null });
       await fetchItems(); // Refresh items to remove approved item
       toast.addToast(`Claim ${status} successfully!`, 'success', 4000);
@@ -149,7 +149,7 @@ const LostFound = () => {
   const fetchClaims = async (itemId) => {
     try {
       const cfg = getAxiosConfig();
-      const res = await axios.get(`http://localhost:4000/api/lostfound/${itemId}/claims`, cfg);
+  const res = await axios.get(`https://klh-eco.onrender.com/api/lostfound/${itemId}/claims`, cfg);
       setClaims(prev => ({ ...prev, [itemId]: res.data }));
     } catch (err) {
       console.error('Failed to fetch claims', err);
@@ -205,7 +205,7 @@ const LostFound = () => {
             <div className="lf-grid">
               {filteredItems.map((item) => (
                 <article key={item._id} className="lf-card">
-                  {item.image && <img className="lf-image" src={`http://localhost:4000/${item.image}`} alt={item.tag} />}
+                  {item.image && <img className="lf-image" src={`https://klh-eco.onrender.com/${item.image}`} alt={item.tag} />}
                   <div className="lf-card-body">
                     <h3 className="lf-tag">{item.tag}</h3>
                     <p className="lf-desc">{item.description}</p>

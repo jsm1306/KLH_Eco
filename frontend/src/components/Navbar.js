@@ -21,7 +21,7 @@ const Navbar = () => {
         },
         credentials: 'include',
       };
-      const res = await fetch('http://localhost:4000/auth/current_user', opts);
+  const res = await fetch('https://klh-eco.onrender.com/auth/current_user', opts);
       if (!res.ok) {
         setUser(null);
         return;
@@ -41,7 +41,7 @@ const Navbar = () => {
       try {
         const storedToken = localStorage.getItem('token');
         if (!storedToken) return;
-        const res = await fetch('http://localhost:4000/api/notifications', {
+  const res = await fetch('https://klh-eco.onrender.com/api/notifications', {
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${storedToken}` },
           credentials: 'include',
         });
@@ -79,7 +79,7 @@ const Navbar = () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) return;
-        const res = await fetch('http://localhost:4000/api/notifications', { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+  const res = await fetch('https://klh-eco.onrender.com/api/notifications', { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
         if (!res.ok) return;
         const data = await res.json();
         const unread = data.filter(n => !n.read).length;
@@ -113,7 +113,7 @@ const Navbar = () => {
         setUnreadCount(0);
         return;
       }
-      fetch('http://localhost:4000/api/notifications', {
+  fetch('https://klh-eco.onrender.com/api/notifications', {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${storedToken}` },
         credentials: 'include',
       })
@@ -159,7 +159,7 @@ const Navbar = () => {
     
     // call backend logout to clear cookie/session and redirect to frontend root
     // use fetch so we can remain in SPA and then navigate
-    fetch('http://localhost:4000/auth/logout', { credentials: 'include' })
+  fetch('https://klh-eco.onrender.com/auth/logout', { credentials: 'include' })
       .then(() => {
         navigate('/');
       })
@@ -168,7 +168,7 @@ const Navbar = () => {
 
   const handleLogin = () => {
     // Start OAuth flow by redirecting to backend
-    window.location.href = 'http://localhost:4000/auth/google';
+  window.location.href = 'https://klh-eco.onrender.com/auth/google';
   };
 
   return (
