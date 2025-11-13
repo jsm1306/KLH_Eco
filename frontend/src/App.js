@@ -5,6 +5,8 @@ import LostFound from './components/LostFound';
 import Login from './components/Login';
 import Navbar from './components/Navbar';
 import Events from './components/Events';
+import Notifications from './components/Notifications';
+import LostFoundClaims from './components/LostFoundClaims';
 import Feedback from './components/Feedback';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ToastProvider } from './components/ToastContext';
@@ -48,6 +50,22 @@ function App() {
           element={
             <ProtectedRoute>
               <Events />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute>
+              <Notifications />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/lostfound/:id/claims"
+          element={
+            <ProtectedRoute>
+              <LostFoundClaims />
             </ProtectedRoute>
           }
         />

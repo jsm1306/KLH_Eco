@@ -16,6 +16,7 @@ const Events = () => {
   // User state for role-based access
   const [currentUser, setCurrentUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [subscribing, setSubscribing] = useState({}); // map eventId -> boolean
   // Create event form state
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newTitle, setNewTitle] = useState('');
@@ -24,6 +25,8 @@ const Events = () => {
   const [newLocation, setNewLocation] = useState('');
   const [newClubId, setNewClubId] = useState('');
   const [creating, setCreating] = useState(false);
+  const [newImageFile, setNewImageFile] = useState(null);
+  const [newImagePreview, setNewImagePreview] = useState(null);
   // Edit / Delete state
   const [editingEvent, setEditingEvent] = useState(null);
   const [editTitle, setEditTitle] = useState('');
@@ -32,6 +35,8 @@ const Events = () => {
   const [editLocation, setEditLocation] = useState('');
   const [editClubId, setEditClubId] = useState('');
   const [updating, setUpdating] = useState(false);
+  const [editImageFile, setEditImageFile] = useState(null);
+  const [editImagePreview, setEditImagePreview] = useState(null);
 
   // Fetch current user to check role
   const fetchCurrentUser = async () => {
@@ -134,6 +139,9 @@ const Events = () => {
     setEditLocation(ev.location || '');
     const cid = ev.club?._id || ev.club || '';
     setEditClubId(cid);
+  // prefill image preview if event has image
+  setEditImagePreview(ev.image ? `http://localhost:4000/${ev.image}` : null);
+  setEditImageFile(null);
     // ensure create form is closed
     setShowCreateForm(false);
     // if viewing a club, scroll to top
@@ -154,22 +162,23 @@ const Events = () => {
     if (!editingEvent) return;
     setUpdating(true);
     try {
-      const payload = {
-        title: editTitle,
-        description: editDescription,
-        date: editDate || null,
-        location: editLocation,
-        club: editClubId,
-      };
-
       const token = localStorage.getItem('token');
+      // Use FormData to support optional image upload
+      const form = new FormData();
+      form.append('title', editTitle);
+      form.append('description', editDescription);
+      form.append('date', editDate || '');
+      form.append('location', editLocation);
+      form.append('club', editClubId);
+      // If a new file was selected, append it
+      if (editImageFile) form.append('image', editImageFile);
+
       const res = await fetch(`http://localhost:4000/api/events/${editingEvent._id}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify(payload),
+        body: form,
       });
 
       if (!res.ok) {
@@ -305,22 +314,21 @@ const Events = () => {
     if (!newTitle || !newClubId) return alert('Please provide at least a title and select a club');
     setCreating(true);
     try {
-      const payload = {
-        title: newTitle,
-        description: newDescription,
-        date: newDate || null,
-        location: newLocation,
-        clubId: newClubId,
-      };
-
       const token = localStorage.getItem('token');
+      const form = new FormData();
+      form.append('title', newTitle);
+      form.append('description', newDescription);
+      form.append('date', newDate || '');
+      form.append('location', newLocation);
+      form.append('clubId', newClubId);
+      if (newImageFile) form.append('image', newImageFile);
+
       const res = await fetch('http://localhost:4000/api/events', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify(payload),
+        body: form,
       });
 
       if (!res.ok) {
@@ -350,12 +358,88 @@ const Events = () => {
       setNewDescription('');
       setNewDate('');
       setNewLocation('');
+      setNewImageFile(null);
+      setNewImagePreview(null);
       setShowCreateForm(false);
     } catch (err) {
       console.error('Create event failed', err);
       alert(err.message || 'Failed to create event');
     } finally {
       setCreating(false);
+    }
+  };
+
+  const isUserSubscribed = (ev) => {
+    if (!currentUser) return false;
+    if (!ev) return false;
+    const list = ev.registeredUsers || [];
+    return list.some(u => (u && (u._id || u)).toString() === (currentUser._id || currentUser).toString());
+  };
+
+  const subscribeToEvent = async (ev) => {
+    if (!currentUser) return alert('Please login to subscribe');
+    setSubscribing(prev => ({ ...prev, [ev._id]: true }));
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:4000/api/events/${ev._id}/subscribe`, {
+        method: 'POST',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        }
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to subscribe');
+      }
+      const data = await res.json();
+      // update local event with new registered count and push currentUser into its list
+      const updatedEv = { ...ev };
+      updatedEv.registeredUsers = updatedEv.registeredUsers || [];
+      updatedEv.registeredUsers.push({ _id: currentUser._id, name: currentUser.name });
+      // update lists
+      setAllEvents(prev => prev.map(it => it._id === ev._id ? updatedEv : it));
+      setEventsByClub(prev => {
+        const copy = { ...prev };
+        Object.keys(copy).forEach(k => { copy[k] = copy[k].map(it => it._id === ev._id ? updatedEv : it); });
+        return copy;
+      });
+    } catch (err) {
+      console.error('Subscribe failed', err);
+      alert(err.message || 'Failed to subscribe');
+    } finally {
+      setSubscribing(prev => ({ ...prev, [ev._id]: false }));
+    }
+  };
+
+  const unsubscribeFromEvent = async (ev) => {
+    if (!currentUser) return alert('Please login to unsubscribe');
+    setSubscribing(prev => ({ ...prev, [ev._id]: true }));
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:4000/api/events/${ev._id}/unsubscribe`, {
+        method: 'POST',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        }
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to unsubscribe');
+      }
+      const data = await res.json();
+      const updatedEv = { ...ev };
+      updatedEv.registeredUsers = (updatedEv.registeredUsers || []).filter(u => (u._id || u).toString() !== (currentUser._id || currentUser).toString());
+      setAllEvents(prev => prev.map(it => it._id === ev._id ? updatedEv : it));
+      setEventsByClub(prev => {
+        const copy = { ...prev };
+        Object.keys(copy).forEach(k => { copy[k] = copy[k].map(it => it._id === ev._id ? updatedEv : it); });
+        return copy;
+      });
+    } catch (err) {
+      console.error('Unsubscribe failed', err);
+      alert(err.message || 'Failed to unsubscribe');
+    } finally {
+      setSubscribing(prev => ({ ...prev, [ev._id]: false }));
     }
   };
 
@@ -429,6 +513,19 @@ const Events = () => {
                   <label>Location</label>
                   <input value={newLocation} onChange={(e) => setNewLocation(e.target.value)} className="input" placeholder="Location (TBD or room)" />
                 </div>
+                <div>
+                  <label>Poster (optional)</label>
+                  <input type="file" accept="image/*" onChange={(ev) => {
+                    const f = ev.target.files && ev.target.files[0];
+                    setNewImageFile(f || null);
+                    setNewImagePreview(f ? URL.createObjectURL(f) : null);
+                  }} className="input" />
+                  {newImagePreview && (
+                    <div style={{ marginTop: 8 }}>
+                      <img src={newImagePreview} alt="preview" style={{ width: '100%', maxHeight: 140, objectFit: 'cover', borderRadius: 8 }} />
+                    </div>
+                  )}
+                </div>
               </div>
               <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
                 <button className="btn" type="submit" disabled={creating}>{creating ? 'Creating...' : 'Create Event'}</button>
@@ -465,6 +562,19 @@ const Events = () => {
                 <div>
                   <label>Location</label>
                   <input value={editLocation} onChange={(e) => setEditLocation(e.target.value)} className="input" placeholder="Location (TBD or room)" />
+                </div>
+                <div>
+                  <label>Poster (optional)</label>
+                  <input type="file" accept="image/*" onChange={(ev) => {
+                    const f = ev.target.files && ev.target.files[0];
+                    setEditImageFile(f || null);
+                    setEditImagePreview(f ? URL.createObjectURL(f) : null);
+                  }} className="input" />
+                  {editImagePreview && (
+                    <div style={{ marginTop: 8 }}>
+                      <img src={editImagePreview} alt="preview" style={{ width: '100%', maxHeight: 140, objectFit: 'cover', borderRadius: 8 }} />
+                    </div>
+                  )}
                 </div>
               </div>
               <div style={{ marginTop: 10, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
@@ -505,12 +615,25 @@ const Events = () => {
                         <div className="events-grid">
                           {upcoming.map((ev) => (
                             <article key={ev._id} className="event-card">
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                                <div style={{ flex: 1 }}>
+                              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                                {ev.image && (
+                                  <img src={`http://localhost:4000/${ev.image}`} alt={ev.title} className="event-media" />
+                                )}
+                                <div style={{ flex: 1 }} className="event-body">
                                   <h3 className="event-title">{ev.title}</h3>
                                   <p className="event-desc">{ev.description}</p>
                                   <p className="event-meta"><strong>Date:</strong> {ev.date ? new Date(ev.date).toLocaleString() : 'TBD'}</p>
                                   <p className="event-meta"><strong>Location:</strong> {ev.location || 'TBD'}</p>
+                                  <p className="event-meta"><strong>Registered:</strong> {ev.registeredUsers ? ev.registeredUsers.length : 0}</p>
+                                  {currentUser ? (
+                                    isUserSubscribed(ev) ? (
+                                      <button className="btn-small" onClick={(e) => { e.stopPropagation(); unsubscribeFromEvent(ev); }} disabled={!!subscribing[ev._id]}>Unsubscribe</button>
+                                    ) : (
+                                      <button className="btn-small" onClick={(e) => { e.stopPropagation(); subscribeToEvent(ev); }} disabled={!!subscribing[ev._id]}>Subscribe</button>
+                                    )
+                                  ) : (
+                                    <button className="btn-small" onClick={(e) => { e.stopPropagation(); alert('Please login to subscribe'); }}>Subscribe</button>
+                                  )}
                                 </div>
                                 {isAdmin && (
                                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 12 }}>
@@ -538,12 +661,25 @@ const Events = () => {
                       <div className="events-grid">
                         {noclubUpcoming.map((ev) => (
                           <article key={ev._id} className="event-card">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                              <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                              {ev.image && (
+                                <img src={`http://localhost:4000/${ev.image}`} alt={ev.title} className="event-media" />
+                              )}
+                              <div style={{ flex: 1 }} className="event-body">
                                 <h3 className="event-title">{ev.title}</h3>
                                 <p className="event-desc">{ev.description}</p>
                                 <p className="event-meta"><strong>Date:</strong> {ev.date ? new Date(ev.date).toLocaleString() : 'TBD'}</p>
                                 <p className="event-meta"><strong>Location:</strong> {ev.location || 'TBD'}</p>
+                                <p className="event-meta"><strong>Registered:</strong> {ev.registeredUsers ? ev.registeredUsers.length : 0}</p>
+                                {currentUser ? (
+                                  isUserSubscribed(ev) ? (
+                                    <button className="btn-small" onClick={(e) => { e.stopPropagation(); unsubscribeFromEvent(ev); }} disabled={!!subscribing[ev._id]}>Unsubscribe</button>
+                                  ) : (
+                                    <button className="btn-small" onClick={(e) => { e.stopPropagation(); subscribeToEvent(ev); }} disabled={!!subscribing[ev._id]}>Subscribe</button>
+                                  )
+                                ) : (
+                                  <button className="btn-small" onClick={(e) => { e.stopPropagation(); alert('Please login to subscribe'); }}>Subscribe</button>
+                                )}
                               </div>
                               {isAdmin && (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 12 }}>
@@ -578,12 +714,25 @@ const Events = () => {
                     <div className="events-grid">
                       {past.map((ev) => (
                         <article key={ev._id} className="event-card">
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                            <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                            {ev.image && (
+                              <img src={`http://localhost:4000/${ev.image}`} alt={ev.title} className="event-media" />
+                            )}
+                            <div style={{ flex: 1 }} className="event-body">
                               <h3 className="event-title">{ev.title}</h3>
                               <p className="event-desc">{ev.description}</p>
                               <p className="event-meta"><strong>Date:</strong> {ev.date ? new Date(ev.date).toLocaleString() : 'TBD'}</p>
                               <p className="event-meta"><strong>Location:</strong> {ev.location || 'TBD'}</p>
+                              <p className="event-meta"><strong>Registered:</strong> {ev.registeredUsers ? ev.registeredUsers.length : 0}</p>
+                              {currentUser ? (
+                                isUserSubscribed(ev) ? (
+                                  <button className="btn-small" onClick={(e) => { e.stopPropagation(); unsubscribeFromEvent(ev); }} disabled={!!subscribing[ev._id]}>Unsubscribe</button>
+                                ) : (
+                                  <button className="btn-small" onClick={(e) => { e.stopPropagation(); subscribeToEvent(ev); }} disabled={!!subscribing[ev._id]}>Subscribe</button>
+                                )
+                              ) : (
+                                <button className="btn-small" onClick={(e) => { e.stopPropagation(); alert('Please login to subscribe'); }}>Subscribe</button>
+                              )}
                             </div>
                           </div>
                         </article>
@@ -608,12 +757,25 @@ const Events = () => {
                       <div className="events-grid">
                         {noclubPast.map((ev) => (
                           <article key={ev._id} className="event-card">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                              <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                              {ev.image && (
+                                <img src={`http://localhost:4000/${ev.image}`} alt={ev.title} className="event-media" />
+                              )}
+                              <div style={{ flex: 1 }} className="event-body">
                                 <h3 className="event-title">{ev.title}</h3>
                                 <p className="event-desc">{ev.description}</p>
                                 <p className="event-meta"><strong>Date:</strong> {ev.date ? new Date(ev.date).toLocaleString() : 'TBD'}</p>
                                 <p className="event-meta"><strong>Location:</strong> {ev.location || 'TBD'}</p>
+                                <p className="event-meta"><strong>Registered:</strong> {ev.registeredUsers ? ev.registeredUsers.length : 0}</p>
+                                {currentUser ? (
+                                  isUserSubscribed(ev) ? (
+                                    <button className="btn-small" onClick={(e) => { e.stopPropagation(); unsubscribeFromEvent(ev); }} disabled={!!subscribing[ev._id]}>Unsubscribe</button>
+                                  ) : (
+                                    <button className="btn-small" onClick={(e) => { e.stopPropagation(); subscribeToEvent(ev); }} disabled={!!subscribing[ev._id]}>Subscribe</button>
+                                  )
+                                ) : (
+                                  <button className="btn-small" onClick={(e) => { e.stopPropagation(); alert('Please login to subscribe'); }}>Subscribe</button>
+                                )}
                               </div>
                             </div>
                           </article>
@@ -671,12 +833,25 @@ const Events = () => {
                       <div className="events-grid">
                         {upcoming.map((ev) => (
                           <article key={ev._id} className="event-card">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                              <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                              {ev.image && (
+                                <img src={`http://localhost:4000/${ev.image}`} alt={ev.title} className="event-media" />
+                              )}
+                              <div style={{ flex: 1 }} className="event-body">
                                 <h3 className="event-title">{ev.title}</h3>
                                 <p className="event-desc">{ev.description}</p>
                                 <p className="event-meta"><strong>Date:</strong> {ev.date ? new Date(ev.date).toLocaleString() : 'TBD'}</p>
                                 <p className="event-meta"><strong>Location:</strong> {ev.location || 'TBD'}</p>
+                                <p className="event-meta"><strong>Registered:</strong> {ev.registeredUsers ? ev.registeredUsers.length : 0}</p>
+                                {currentUser ? (
+                                  isUserSubscribed(ev) ? (
+                                    <button className="btn-small" onClick={(e) => { e.stopPropagation(); unsubscribeFromEvent(ev); }} disabled={!!subscribing[ev._id]}>Unsubscribe</button>
+                                  ) : (
+                                    <button className="btn-small" onClick={(e) => { e.stopPropagation(); subscribeToEvent(ev); }} disabled={!!subscribing[ev._id]}>Subscribe</button>
+                                  )
+                                ) : (
+                                  <button className="btn-small" onClick={(e) => { e.stopPropagation(); alert('Please login to subscribe'); }}>Subscribe</button>
+                                )}
                               </div>
                               {isAdmin && (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 12 }}>
@@ -705,6 +880,16 @@ const Events = () => {
                                 <p className="event-desc">{ev.description}</p>
                                 <p className="event-meta"><strong>Date:</strong> {ev.date ? new Date(ev.date).toLocaleString() : 'TBD'}</p>
                                 <p className="event-meta"><strong>Location:</strong> {ev.location || 'TBD'}</p>
+                                <p className="event-meta"><strong>Registered:</strong> {ev.registeredUsers ? ev.registeredUsers.length : 0}</p>
+                                {currentUser ? (
+                                  isUserSubscribed(ev) ? (
+                                    <button className="btn-small" onClick={(e) => { e.stopPropagation(); unsubscribeFromEvent(ev); }} disabled={!!subscribing[ev._id]}>Unsubscribe</button>
+                                  ) : (
+                                    <button className="btn-small" onClick={(e) => { e.stopPropagation(); subscribeToEvent(ev); }} disabled={!!subscribing[ev._id]}>Subscribe</button>
+                                  )
+                                ) : (
+                                  <button className="btn-small" onClick={(e) => { e.stopPropagation(); alert('Please login to subscribe'); }}>Subscribe</button>
+                                )}
                               </div>
                             </div>
                           </article>

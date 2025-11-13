@@ -184,6 +184,21 @@ const Dashboard = () => {
     });
   };
 
+  // choose banner event: prefer an event happening today, otherwise the next upcoming
+  const chooseBannerEvent = () => {
+    if (!upcomingEvents || upcomingEvents.length === 0) return null;
+    const now = new Date();
+    const isSameDay = (d1, d2) => d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+
+    const todayEvent = upcomingEvents.find(e => e.date && isSameDay(new Date(e.date), now));
+    if (todayEvent) return todayEvent;
+
+    // otherwise earliest upcoming (already sorted in fetchUpcomingEvents)
+    return upcomingEvents[0];
+  };
+
+  const bannerEvent = chooseBannerEvent();
+
   if (loading) {
     return (
       <div className="dashboard-hero">
@@ -198,6 +213,25 @@ const Dashboard = () => {
         <h1>Welcome to KLH Campus Page</h1>
         {currentUser && <p className="user-greeting">Hello, {currentUser.name}! 👋</p>}
       </div>
+
+      {/* Banner: show today's or next upcoming event */}
+      {bannerEvent && (
+        <div className="dashboard-banner" onClick={() => navigate(`/events`)}>
+          {bannerEvent.image ? (
+            <img className="banner-image" src={`http://localhost:4000/${bannerEvent.image}`} alt={bannerEvent.title} />
+          ) : (
+            <div className="banner-fallback" />
+          )}
+          <div className="banner-content">
+            <div className="banner-meta">{bannerEvent.date ? formatDate(bannerEvent.date) : 'TBD'}</div>
+            <h2 className="banner-title">{bannerEvent.title}</h2>
+            <div className="banner-registered">Registered: {bannerEvent.registeredUsers ? bannerEvent.registeredUsers.length : 0}</div>
+            {bannerEvent.club && <div className="banner-club">🎯 {bannerEvent.club.name}</div>}
+            {bannerEvent.location && <div className="banner-location">📍 {bannerEvent.location}</div>}
+            <button className="banner-cta" onClick={(e) => { e.stopPropagation(); navigate('/events'); }}>See all events →</button>
+          </div>
+        </div>
+      )}
 
       {/* Quick Stats */}
       <div className="dashboard-stats">
@@ -263,7 +297,8 @@ const Dashboard = () => {
                 <div className="event-date-badge">{formatDate(event.date)}</div>
                 <h3>{event.title}</h3>
                 {event.club && <p className="event-club">🎯 {event.club.name}</p>}
-                <p className="event-location">📍 {event.location}</p>
+                    <p className="event-location">📍 {event.location}</p>
+                    <p className="event-meta"><strong>Registered:</strong> {event.registeredUsers ? event.registeredUsers.length : 0}</p>
               </div>
             ))}
           </div>

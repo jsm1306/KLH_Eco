@@ -11,10 +11,13 @@ import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
 import User from "./models/User.js";
 import LostFound from "./models/LostFound.js";
+import Notification from './models/Notification.js';
 
 import eventRoutes from "./routes/eventRoutes.js";
+import { createEvent, updateEvent, subscribeEvent, unsubscribeEvent } from "./controllers/eventController.js";
 import clubRoutes from "./routes/clubRoutes.js";
 import feedbackRoutes from "./routes/feedbackRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -222,6 +225,15 @@ app.get("/api/lostfound", async (req, res) => {
   }
 });
 
+// Events: allow multipart/form-data uploads for event posters
+// This route handles creating events with an optional uploaded image file.
+app.post('/api/events', verifyToken, upload.single('image'), createEvent);
+// Support updating event with optional image upload
+app.put('/api/events/:id', verifyToken, upload.single('image'), updateEvent);
+// Subscribe / unsubscribe (protected)
+app.post('/api/events/:id/subscribe', verifyToken, subscribeEvent);
+app.post('/api/events/:id/unsubscribe', verifyToken, unsubscribeEvent);
+
 // Submit a claim for a lost item
 app.post("/api/lostfound/:id/claim", verifyToken, async (req, res) => {
   try {
@@ -241,6 +253,16 @@ app.post("/api/lostfound/:id/claim", verifyToken, async (req, res) => {
       status: 'pending',
     });
     await item.save();
+    // create an in-app notification for the poster of the item
+    try {
+      const claimant = await User.findById(req.userId);
+      const posterId = item.user;
+      const title = 'New claim on your item';
+      const msg = `${claimant.name || 'Someone'} has claimed your item "${item.tag || 'item'}". Click to view claims.`;
+      await Notification.create({ user: posterId, title, message: msg, link: `/lostfound/${item._id}/claims` });
+    } catch (notifErr) {
+      console.error('Failed to create notification for claim:', notifErr);
+    }
     res.status(201).json({ message: 'Claim submitted successfully' });
   } catch (error) {
     res.status(500).send(error.message);
@@ -276,6 +298,21 @@ app.put("/api/lostfound/:id/claim/:claimId/verify", verifyToken, async (req, res
     claim.status = status;
     await item.save();
 
+    // notify claimant about the result
+    try {
+      const claimantUser = await User.findById(claim.claimant);
+      const poster = await User.findById(req.userId);
+      if (claimantUser) {
+        const title = status === 'approved' ? 'Your claim was approved' : 'Your claim was rejected';
+        const msg = status === 'approved'
+          ? `${poster.name || 'An owner'} approved your claim for "${item.tag || 'item'}".`
+          : `${poster.name || 'An owner'} rejected your claim for "${item.tag || 'item'}".`;
+        await Notification.create({ user: claimantUser._id, title, message: msg, link: status === 'approved' ? `/lostfound` : `/lostfound/${item._id}/claims` });
+      }
+    } catch (notifErr) {
+      console.error('Failed to notify claimant:', notifErr);
+    }
+
     if (status === 'approved') {
       // Delete the item from database
       await LostFound.findByIdAndDelete(id);
@@ -310,3 +347,4 @@ app.get("/", (req, res) => {
 app.use("/api/events", eventRoutes);
 app.use("/api/clubs", clubRoutes);
 app.use("/api/feedback", feedbackRoutes);
+app.use('/api/notifications', verifyToken, notificationRoutes);

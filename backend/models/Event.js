@@ -11,6 +11,18 @@ const eventSchema = new mongoose.Schema({
     required: true,
   },
   location: String,
+  // optional poster or image for the event (stored as a path or URL)
+  image: {
+    type: String,
+    default: null,
+  },
+  // users who subscribed / registered for this event
+  registeredUsers: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    }
+  ],
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

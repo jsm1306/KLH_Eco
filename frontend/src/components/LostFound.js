@@ -125,10 +125,10 @@ const LostFound = () => {
       setClaimedItems(prev => new Set([...prev, claimModal.item._id]));
       setClaimModal({ open: false, item: null });
       setClaimMessage('');
-      alert('Claim submitted successfully!');
+      toast.addToast('Claim submitted successfully!', 'success', 4000);
     } catch (err) {
       console.error('Claim failed', err);
-      alert('Failed to submit claim');
+      toast.addToast('Failed to submit claim', 'error', 5000);
     }
   };
 
@@ -139,10 +139,10 @@ const LostFound = () => {
       await axios.put(`http://localhost:4000/api/lostfound/${claimsModal.item._id}/claim/${claimId}/verify`, { status }, cfg);
       setClaimsModal({ open: false, item: null });
       await fetchItems(); // Refresh items to remove approved item
-      alert(`Claim ${status} successfully!`);
+      toast.addToast(`Claim ${status} successfully!`, 'success', 4000);
     } catch (err) {
       console.error('Verify claim failed', err);
-      alert('Failed to verify claim');
+      toast.addToast('Failed to verify claim', 'error', 5000);
     }
   };
 
