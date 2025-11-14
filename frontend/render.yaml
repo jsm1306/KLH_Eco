@@ -2,7 +2,7 @@ services:
   - type: web
     name: klh-eco-frontend
     env: static
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci && npm run build:prod
     staticPublishPath: ./build
     routes:
       - type: rewrite
