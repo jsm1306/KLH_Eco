@@ -52,6 +52,7 @@ function App() {
   return (
    <ToastProvider>
     <Router>
+      <TokenHandler />
       <Navbar />
       <Routes>
         {/* Public Route */}
