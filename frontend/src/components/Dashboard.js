@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../index.css';
 import API_BASE from '../api/base';
+import { getImageUrl } from '../utils/imageHelper';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -219,7 +220,7 @@ const Dashboard = () => {
       {bannerEvent && (
         <div className="dashboard-banner" onClick={() => navigate(`/events`)}>
           {bannerEvent.image ? (
-            <img className="banner-image" src={`${API_BASE}/${bannerEvent.image}`} alt={bannerEvent.title} />
+            <img className="banner-image" src={getImageUrl(bannerEvent.image)} alt={bannerEvent.title} />
           ) : (
             <div className="banner-fallback" />
           )}
@@ -318,7 +319,7 @@ const Dashboard = () => {
               <div key={item._id} className="dashboard-lf-card">
                 {item.image && (
                   <img 
-                    src={`${API_BASE}/${item.image}`} 
+                    src={getImageUrl(item.image)} 
                     alt={item.itemName}
                     className="lf-thumbnail"
                   />

@@ -21,19 +21,41 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 
 dotenv.config();
 // Configurable frontend URL for redirects and CORS (set FRONTEND_URL in production)
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+const FRONTEND_URL = process.env.FRONTEND_URL || (process.env.NODE_ENV === 'production' ? 'https://klh-eco-1.onrender.com' : 'http://localhost:3000');
 const app = express();
 app.use(cookieParser());
 app.use(express.json());
+
+// Allow multiple origins for CORS (production and localhost)
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://klh-eco-frontend-oowt.onrender.com',
+  FRONTEND_URL
+];
+
 app.use(cors({
-  origin: FRONTEND_URL,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow all origins for now - you can restrict later
+    }
+  },
   credentials: true
 }));
-app.use('/uploads', express.static('uploads'));
+
+// Serve uploads with proper CORS headers
+app.use('/uploads', (req, res, next) => {
+  res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.header('Access-Control-Allow-Origin', '*');
+  next();
+}, express.static('uploads'));
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || 'e8d006ca3409ca0bbed13c60ebafe611fe4fd2857eff7d32185bce79ece996038c39b5fa35818467df36054c382281312478a1325e13d49214fd7c3efd950601',
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
   })

@@ -5,6 +5,7 @@ import '../index.css';
 import { useToast } from './ToastContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import API_BASE from '../api/base';
+import { getImageUrl } from '../utils/imageHelper';
 
 const LostFound = () => {
   const [items, setItems] = useState([]);
@@ -206,7 +207,7 @@ const LostFound = () => {
             <div className="lf-grid">
               {filteredItems.map((item) => (
                 <article key={item._id} className="lf-card">
-                  {item.image && <img className="lf-image" src={`${API_BASE}/${item.image}`} alt={item.tag} />}
+                  {item.image && <img className="lf-image" src={getImageUrl(item.image)} alt={item.tag} />}
                   <div className="lf-card-body">
                     <h3 className="lf-tag">{item.tag}</h3>
                     <p className="lf-desc">{item.description}</p>
