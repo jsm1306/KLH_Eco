@@ -1,15 +1,14 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import '../index.css';
 import API_BASE from '../api/base';
 
 const Navbar = () => {
   const [user, setUser] = useState(null);
-  const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [animateBell, setAnimateBell] = useState(false);
-  const [theme, setTheme] = useState('dark');
   const navigate = useNavigate();
+  const location = useLocation();
 
   const fetchCurrentUser = async () => {
     try {
@@ -48,7 +47,6 @@ const Navbar = () => {
         });
         if (!res.ok) return;
         const data = await res.json();
-        setNotifications(data);
         const unread = data.filter(n => !n.read).length;
         setUnreadCount(unread);
       } catch (err) {
@@ -90,7 +88,6 @@ const Navbar = () => {
           setTimeout(() => setAnimateBell(false), 2000);
         }
         prev = unread;
-        setNotifications(data);
         setUnreadCount(unread);
       } catch (err) {}
     };
@@ -110,7 +107,6 @@ const Navbar = () => {
     const onUserChange = () => {
       const storedToken = localStorage.getItem('token');
       if (!storedToken) {
-        setNotifications([]);
         setUnreadCount(0);
         return;
       }
@@ -120,7 +116,6 @@ const Navbar = () => {
       })
         .then(r => r.ok ? r.json() : [])
         .then(data => {
-          setNotifications(data);
           setUnreadCount(data.filter(n => !n.read).length);
         })
         .catch(() => {});
@@ -132,23 +127,6 @@ const Navbar = () => {
       window.removeEventListener('storage', (e) => { if (e.key === 'token') onUserChange(); });
     };
   }, []);
-
-  // no dropdown; notifications open on a dedicated page
-
-  // Theme toggle
-  useEffect(() => {
-    const t = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', t);
-    setTheme(t);
-  }, []);
-
-  const toggleTheme = () => {
-    const cur = document.documentElement.getAttribute('data-theme') || 'dark';
-    const next = cur === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('theme', next);
-    setTheme(next);
-  };
 
   const handleLogout = () => {
     // clear local token first
@@ -172,30 +150,54 @@ const Navbar = () => {
     window.location.href = `${API_BASE}/auth/google`;
   };
 
+  const isActive = (path) => location.pathname === path;
+
   return (
     <nav className="app-navbar">
       <div className="nav-left">
-        <Link to="/dashboard" className="nav-brand">KLH Eco</Link>
-  <Link to="/dashboard" className="nav-link">Dashboard</Link>
-  <Link to="/events" className="nav-link">Events</Link>
-  <Link to="/lostfound" className="nav-link">Lost & Found</Link>
-  <Link to="/feedback" className="nav-link">Feedback</Link>
+        <Link to="/dashboard" className="nav-brand">
+          <span className="brand-klh">KLH</span>
+          <span className="brand-eco">Eco</span>
+        </Link>
+        <Link to="/dashboard" className={`nav-link ${isActive('/dashboard') ? 'active' : ''}`}>
+          Dashboard
+        </Link>
+        <Link to="/events" className={`nav-link ${isActive('/events') ? 'active' : ''}`}>
+          Events
+        </Link>
+        <Link to="/lostfound" className={`nav-link ${isActive('/lostfound') ? 'active' : ''}`}>
+          Lost & Found
+        </Link>
+        <Link to="/feedback" className={`nav-link ${isActive('/feedback') ? 'active' : ''}`}>
+          Feedback
+        </Link>
       </div>
       <div className="nav-right">
-        <div className="nav-notes" style={{ position: 'relative', marginRight: 10 }}>
-          <button className={`nav-cta ${animateBell ? 'animate-bell' : ''}`} onClick={() => navigate('/notifications')} aria-label="Notifications">
-            <span style={{ fontSize: 18 }}>🔔</span>
-            {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
-          </button>
-        </div>
-        <button style={{ marginRight: 10 }} className="nav-cta" onClick={toggleTheme}>{theme === 'dark' ? 'Light' : 'Dark'}</button>
+        <button 
+          className={`nav-notification-btn ${animateBell ? 'animate-bell' : ''}`} 
+          onClick={() => navigate('/notifications')} 
+          aria-label="Notifications"
+        >
+          <span className="notif-icon">🔔</span>
+          {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
+        </button>
+        
         {user ? (
-          <>
-            <span className="nav-user">{user.name}</span>
-            <button className="nav-cta" onClick={handleLogout}>Logout</button>
-          </>
+          <div className="nav-user-section">
+            <div className="nav-user-info">
+              <span className="user-avatar">{user.name?.charAt(0) || 'U'}</span>
+              <span className="user-name">{user.name}</span>
+            </div>
+            <button className="nav-logout-btn" onClick={handleLogout}>
+              <span className="logout-icon">→</span>
+              Logout
+            </button>
+          </div>
         ) : (
-          <button className="nav-cta" onClick={handleLogin}>Login</button>
+          <button className="nav-login-btn" onClick={handleLogin}>
+            <span className="login-icon">⚡</span>
+            Login
+          </button>
         )}
       </div>
     </nav>

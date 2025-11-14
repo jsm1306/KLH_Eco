@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../index.css';
 import API_BASE from '../api/base';
-import { getImageUrl } from '../utils/imageHelper';
+import ImageWithFallback from './ImageWithFallback';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ const Dashboard = () => {
         setIsAdmin(user.role === 'admin');
       }
     } catch (error) {
-      console.error('Error fetching current user:', error);
+      // Error silently handled
     }
   }, []);
 
@@ -46,7 +46,6 @@ const Dashboard = () => {
       });
       if (res.ok) {
         const events = await res.json();
-        console.log('Fetched events:', events);
         
         const upcoming = events
           .filter(e => new Date(e.date) >= new Date())
@@ -55,11 +54,10 @@ const Dashboard = () => {
         setUpcomingEvents(upcoming);
         
         const upcomingCount = events.filter(e => new Date(e.date) >= new Date()).length;
-        console.log('Upcoming events count:', upcomingCount);
         setStats(prev => ({ ...prev, upcomingEvents: upcomingCount }));
       }
     } catch (error) {
-      console.error('Error fetching events:', error);
+      // Error silently handled
     }
   }, []);
 
@@ -71,16 +69,14 @@ const Dashboard = () => {
       });
       if (res.ok) {
         const items = await res.json();
-        console.log('Fetched lost & found items:', items);
         
         const recent = items.slice(0, 6);
         setRecentLostFound(recent);
         
-        console.log('Total lost & found count:', items.length);
         setStats(prev => ({ ...prev, recentLostFound: items.length }));
       }
     } catch (error) {
-      console.error('Error fetching lost & found:', error);
+      // Error silently handled
     }
   }, []);
 
@@ -94,16 +90,14 @@ const Dashboard = () => {
       });
       if (res.ok) {
         const feedback = await res.json();
-        console.log('Fetched feedback:', feedback);
         
         const recent = feedback.slice(0, 5);
         setRecentFeedback(recent);
         
-        console.log('Total feedback count:', feedback.length);
         setStats(prev => ({ ...prev, pendingFeedback: feedback.length }));
       }
     } catch (error) {
-      console.error('Error fetching feedback:', error);
+      // Error silently handled
     }
   }, []);
 
@@ -115,12 +109,10 @@ const Dashboard = () => {
       });
       if (res.ok) {
         const clubs = await res.json();
-        console.log('Fetched clubs:', clubs);
-        console.log('Total clubs count:', clubs.length);
         setStats(prev => ({ ...prev, totalClubs: clubs.length }));
       }
     } catch (error) {
-      console.error('Error fetching clubs:', error);
+      // Error silently handled
     }
   }, []);
 
@@ -136,7 +128,7 @@ const Dashboard = () => {
         fetchClubs()
       ]);
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      // Error silently handled
     } finally {
       setLoading(false);
     }
@@ -220,7 +212,7 @@ const Dashboard = () => {
       {bannerEvent && (
         <div className="dashboard-banner" onClick={() => navigate(`/events`)}>
           {bannerEvent.image ? (
-            <img className="banner-image" src={getImageUrl(bannerEvent.image)} alt={bannerEvent.title} />
+            <ImageWithFallback className="banner-image" src={bannerEvent.image} alt={bannerEvent.title} />
           ) : (
             <div className="banner-fallback" />
           )}
@@ -318,8 +310,8 @@ const Dashboard = () => {
             {recentLostFound.map(item => (
               <div key={item._id} className="dashboard-lf-card">
                 {item.image && (
-                  <img 
-                    src={getImageUrl(item.image)} 
+                  <ImageWithFallback
+                    src={item.image} 
                     alt={item.itemName}
                     className="lf-thumbnail"
                   />

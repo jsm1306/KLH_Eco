@@ -26,30 +26,59 @@ const app = express();
 app.use(cookieParser());
 app.use(express.json());
 
-// Allow multiple origins for CORS (production and localhost)
-const allowedOrigins = [
-  'http://localhost:3000',
-  'https://klh-eco-frontend-oowt.onrender.com',
-  FRONTEND_URL
-];
-
+// Allow all origins for CORS
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(null, true); // Allow all origins for now - you can restrict later
-    }
-  },
+  origin: true,
   credentials: true
 }));
+
+// Proxy endpoint to fetch production images (for development)
+// This MUST be before the static middleware to avoid route conflicts
+app.get('/uploads/proxy/:filename', async (req, res) => {
+  try {
+    const { filename } = req.params;
+    const productionUrl = `https://klh-eco.onrender.com/uploads/${filename}`;
+    
+    console.log('🔍 Proxying image from production:', productionUrl);
+    
+    // Fetch from production
+    const response = await fetch(productionUrl);
+    
+    if (!response.ok) {
+      console.log('❌ Image not found in production (status ' + response.status + '):', filename);
+      console.log('💡 This image might have been uploaded to production and not synced locally');
+      return res.status(404).json({ 
+        error: 'Image not found in production',
+        filename,
+        productionUrl,
+        tip: 'Image exists in production database but file is missing from production server'
+      });
+    }
+    
+    // Set CORS headers
+    res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Content-Type', response.headers.get('content-type'));
+    
+    // Pipe the image
+    const buffer = await response.arrayBuffer();
+    res.send(Buffer.from(buffer));
+    console.log('✅ Successfully proxied image:', filename);
+  } catch (error) {
+    console.error('💥 Error proxying image:', error.message);
+    res.status(500).json({ 
+      error: 'Error fetching image from production',
+      details: error.message 
+    });
+  }
+});
 
 // Serve uploads with proper CORS headers
 app.use('/uploads', (req, res, next) => {
   res.header('Cross-Origin-Resource-Policy', 'cross-origin');
   res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
   next();
 }, express.static('uploads'));
 
@@ -195,7 +224,6 @@ const verifyToken = (req, res, next) => {
     token = req.cookies.token;
   }
   // Debug logging to help trace why token might be missing in client requests
-  console.log('verifyToken called - authHeader present:', !!authHeader, 'cookie present:', !!(req.cookies && req.cookies.token));
   if (!token) return res.status(401).json({ error: 'Not authenticated' });
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');

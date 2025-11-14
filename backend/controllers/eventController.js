@@ -2,7 +2,6 @@ import Event from "../models/Event.js";
 import Club from "../models/Club.js";
 import Notification from "../models/Notification.js";
 import User from "../models/User.js";
-import { sendEmail, sendBulkEmails } from "../utils/mailer.js";
 
 // Create event (club member)
 export const createEvent = async (req, res) => {
@@ -79,28 +78,6 @@ export const subscribeEvent = async (req, res) => {
     const user = await User.findById(userId);
   const clubName = event.club && event.club.name ? event.club.name : 'Unknown Club';
   await Notification.create({ user: userId, title: 'Subscription confirmed', message: `You have subscribed to ${event.title} (${clubName})`, link: `/events` });
-
-    // Send confirmation email to the subscribing user if email available
-    try {
-      if (user && user.mail) {
-        // Prefer a specific admin user's email as the sender if they exist
-        const preferredAdminEmail = '2310030002@klh.edu.in';
-        let adminSender = null;
-        if (preferredAdminEmail) {
-          adminSender = await User.findOne({ role: 'admin', mail: preferredAdminEmail });
-        }
-        if (!adminSender) {
-          adminSender = await User.findOne({ role: 'admin', mail: { $exists: true, $ne: null } });
-        }
-        const fromAddr = (adminSender && adminSender.mail) ? adminSender.mail : (process.env.MAIL_FROM || undefined);
-
-        const subj = `Subscription confirmed: ${event.title} - ${clubName}`;
-        const text = `Hi ${user.name || ''},\n\nYou have successfully subscribed to the event "${event.title}" from ${clubName} scheduled on ${event.date ? new Date(event.date).toLocaleString() : 'TBD'}.\n\nThanks,\n${clubName}`;
-        await sendEmail(user.mail, subj, text, `<p>${text.replace(/\n/g, '<br/>')}</p>`, fromAddr);
-      }
-    } catch (mailErr) {
-      console.error('Failed to send subscription email:', mailErr);
-    }
 
     // send back updated count and a simple acknowledgement
     res.json({ message: 'Subscribed', registeredCount: event.registeredUsers.length });

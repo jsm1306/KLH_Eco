@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from './ToastContext';
 import API_BASE from '../api/base';
@@ -11,7 +11,7 @@ const LostFoundClaims = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -34,9 +34,9 @@ const LostFoundClaims = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
-  useEffect(() => { load(); }, [id]);
+  useEffect(() => { load(); }, [id, load]);
 
   const handleVerify = async (claimId, status) => {
     try {
@@ -62,7 +62,6 @@ const LostFoundClaims = () => {
       // otherwise refresh claims
       load();
     } catch (err) {
-      console.error(err);
       toast.addToast('Failed to update claim', 'error', 5000);
     }
   };

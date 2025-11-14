@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
-import LostFound from './components/LostFound';
+import LostFoundNew from './components/LostFoundNew';
 import Login from './components/Login';
 import Navbar from './components/Navbar';
-import Events from './components/Events';
-import Notifications from './components/Notifications';
+import EventsNew from './components/EventsNew';
+import NotificationsNew from './components/NotificationsNew';
 import LostFoundClaims from './components/LostFoundClaims';
-import Feedback from './components/Feedback';
+import FeedbackNew from './components/FeedbackNew';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ToastProvider } from './components/ToastContext';
 
@@ -23,14 +23,13 @@ function App() {
         urlToken = hashParams.get('token');
       }
       if (urlToken) {
-        console.log('App: captured token from URL/hash, saving to localStorage');
         localStorage.setItem('token', urlToken);
         // remove token from URL (both search and hash)
         params.delete('token');
         window.history.replaceState({}, document.title, window.location.pathname + (params.toString() ? `?${params.toString()}` : ''));
       }
     } catch (e) {
-      console.error('App: error parsing token from URL', e);
+      // Error silently handled
     }
   }, []);
   return (
@@ -49,7 +48,7 @@ function App() {
           path="/events"
           element={
             <ProtectedRoute>
-              <Events />
+              <EventsNew />
             </ProtectedRoute>
           }
         />
@@ -57,7 +56,7 @@ function App() {
           path="/notifications"
           element={
             <ProtectedRoute>
-              <Notifications />
+              <NotificationsNew />
             </ProtectedRoute>
           }
         />
@@ -73,7 +72,7 @@ function App() {
           path="/lostfound"
           element={
             <ProtectedRoute>
-              <LostFound />
+              <LostFoundNew />
             </ProtectedRoute>
           }
         />
@@ -81,7 +80,7 @@ function App() {
           path="/feedback"
           element={
             <ProtectedRoute>
-              <Feedback />
+              <FeedbackNew />
             </ProtectedRoute>
           }
         />

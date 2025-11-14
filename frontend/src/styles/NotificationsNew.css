@@ -1,0 +1,369 @@
+/* ==================== NOTIFICATIONS PAGE - PROFESSIONAL NEON THEME ==================== */
+
+.notifications-page-container {
+  min-height: 100vh;
+  background: transparent;
+  padding: 2rem;
+  font-family: 'Inter', sans-serif;
+}
+
+/* ==================== PAGE HEADER ==================== */
+
+.notifications-page-header {
+  max-width: 1400px;
+  margin: 0 auto 2.5rem auto;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid rgba(102, 252, 241, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.notifications-page-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--neon-cyan);
+  margin: 0;
+  text-shadow: 0 0 20px rgba(102, 252, 241, 0.5);
+  letter-spacing: 1.5px;
+}
+
+.unread-badge {
+  padding: 0.5rem 1rem;
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  border-radius: 20px;
+  color: #fbbf24;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.mark-all-read-btn {
+  padding: 0.75rem 1.5rem;
+  background: rgba(102, 252, 241, 0.15);
+  border: 1px solid rgba(102, 252, 241, 0.4);
+  border-radius: 8px;
+  color: var(--neon-cyan);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.mark-all-read-btn:hover:not(:disabled) {
+  background: rgba(102, 252, 241, 0.25);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 4px 16px rgba(102, 252, 241, 0.2);
+}
+
+.mark-all-read-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ==================== TWO COLUMN LAYOUT ==================== */
+
+.notifications-layout {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* ==================== LEFT SIDEBAR - NOTIFICATIONS LIST ==================== */
+
+.notifications-sidebar {
+  background: rgba(31, 40, 51, 0.6);
+  border: 1px solid rgba(102, 252, 241, 0.25);
+  border-radius: 12px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  max-height: 700px;
+}
+
+.sidebar-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(102, 252, 241, 0.2);
+}
+
+.sidebar-header h2 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.2rem;
+  color: var(--neon-cyan);
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.notifications-loading,
+.notifications-empty {
+  padding: 3rem 2rem;
+  text-align: center;
+  color: var(--neon-light-gray);
+  font-size: 1rem;
+}
+
+.notifications-list {
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Custom scrollbar */
+.notifications-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notifications-list::-webkit-scrollbar-track {
+  background: rgba(11, 12, 16, 0.5);
+}
+
+.notifications-list::-webkit-scrollbar-thumb {
+  background: rgba(102, 252, 241, 0.3);
+  border-radius: 3px;
+}
+
+.notifications-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(102, 252, 241, 0.5);
+}
+
+/* ==================== NOTIFICATION ITEM ==================== */
+
+.notification-item {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(102, 252, 241, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(11, 12, 16, 0.3);
+}
+
+.notification-item:hover {
+  background: rgba(11, 12, 16, 0.6);
+}
+
+.notification-item.active {
+  background: rgba(102, 252, 241, 0.15);
+  border-left: 3px solid var(--neon-cyan);
+}
+
+.notification-item.unread {
+  background: rgba(11, 12, 16, 0.5);
+}
+
+.notification-item.unread.active {
+  background: rgba(102, 252, 241, 0.2);
+}
+
+.notification-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.notification-item-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--neon-cyan);
+  margin: 0;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.unread-indicator {
+  width: 8px;
+  height: 8px;
+  background: #fbbf24;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+}
+
+.notification-item-description {
+  color: rgba(197, 198, 199, 0.85);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0 0 0.5rem 0;
+}
+
+.notification-item-time {
+  color: rgba(197, 198, 199, 0.6);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+/* ==================== RIGHT PANEL - NOTIFICATION DETAILS ==================== */
+
+.notifications-detail {
+  background: rgba(31, 40, 51, 0.6);
+  border: 1px solid rgba(102, 252, 241, 0.25);
+  border-radius: 12px;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  min-height: 500px;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--neon-light-gray);
+  font-size: 1.1rem;
+  opacity: 0.7;
+}
+
+.detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.detail-header {
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid rgba(102, 252, 241, 0.2);
+}
+
+.detail-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--neon-cyan);
+  margin: 0 0 0.75rem 0;
+  line-height: 1.3;
+  letter-spacing: 0.5px;
+}
+
+.detail-timestamp {
+  color: rgba(197, 198, 199, 0.7);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.detail-body {
+  flex: 1;
+}
+
+.detail-message {
+  color: var(--neon-light-gray);
+  font-size: 1rem;
+  line-height: 1.8;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.detail-actions {
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(102, 252, 241, 0.15);
+}
+
+.action-btn {
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue));
+  border: none;
+  border-radius: 8px;
+  color: var(--neon-dark);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 16px rgba(102, 252, 241, 0.3);
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(102, 252, 241, 0.5);
+}
+
+/* ==================== RESPONSIVE DESIGN ==================== */
+
+@media (max-width: 1024px) {
+  .notifications-layout {
+    grid-template-columns: 350px 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .notifications-page-container {
+    padding: 1rem;
+  }
+
+  .notifications-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .header-left {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .notifications-page-title {
+    font-size: 2rem;
+  }
+
+  .mark-all-read-btn {
+    width: 100%;
+  }
+
+  .notifications-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .notifications-sidebar {
+    max-height: 400px;
+  }
+
+  .notifications-detail {
+    min-height: 400px;
+  }
+}
+
+@media (max-width: 480px) {
+  .notifications-page-title {
+    font-size: 1.5rem;
+  }
+
+  .notification-item {
+    padding: 1rem;
+  }
+
+  .notifications-detail {
+    padding: 1.5rem;
+  }
+
+  .detail-title {
+    font-size: 1.4rem;
+  }
+
+  .detail-message {
+    font-size: 0.95rem;
+  }
+}
