@@ -3,6 +3,7 @@ import passport from "passport";
 import jwt from "jsonwebtoken";
 import "../utils/passportConfig.js"; // import the strategy setup
 import User from "../models/User.js";
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 const router = express.Router();
 
@@ -11,10 +12,10 @@ router.get("/google", passport.authenticate("google", { scope: ["profile", "mail
 
 // Step 2: Google callback
 router.get("/google/callback",
-  passport.authenticate("google", { failureRedirect: "https://klh-eco-frontend.onrender.com" }),
+  passport.authenticate("google", { failureRedirect: FRONTEND_URL }),
   (req, res) => {
-    const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
-    res.redirect(`https://klh-eco-frontend.onrender.com/dashboard?token=${token}`);
+    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    res.redirect(`${FRONTEND_URL}#token=${token}`);
   }
 );
 

@@ -1,13 +1,15 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
-import Login from './components/Login';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
-import LostFound from './components/LostFound';
+import LostFoundNew from './components/LostFoundNew';
+import Login from './components/Login';
 import Navbar from './components/Navbar';
-import Events from './components/Events';
-import Feedback from './components/Feedback';
+import EventsNew from './components/EventsNew';
+import NotificationsNew from './components/NotificationsNew';
+import LostFoundClaims from './components/LostFoundClaims';
+import FeedbackNew from './components/FeedbackNew';
 import ProtectedRoute from './components/ProtectedRoute';
-import './App.css';
+import { ToastProvider } from './components/ToastContext';
 
 function TokenHandler() {
   const navigate = useNavigate();
@@ -27,7 +29,6 @@ function TokenHandler() {
       }
       
       if (urlToken) {
-        console.log('TokenHandler: captured token, saving to localStorage');
         localStorage.setItem('token', urlToken);
         
         // Clean URL without full page reload
@@ -40,7 +41,7 @@ function TokenHandler() {
         navigate('/dashboard', { replace: true });
       }
     } catch (e) {
-      console.error('TokenHandler: error parsing token', e);
+      // Error silently handled
     }
   }, [navigate]);
 
@@ -49,20 +50,38 @@ function TokenHandler() {
 
 function App() {
   return (
+   <ToastProvider>
     <Router>
-      <TokenHandler />
       <Navbar />
       <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<Dashboard />} />
+        {/* Public Route */}
         <Route path="/dashboard" element={<Dashboard />} />
 
-        {/* Protected Routes */}
+  {/* Login route */}
+  <Route path="/login" element={<Login />} />
+
+        {/* Protected pages: require login to view */}
         <Route
           path="/events"
           element={
             <ProtectedRoute>
-              <Events />
+              <EventsNew />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute>
+              <NotificationsNew />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/lostfound/:id/claims"
+          element={
+            <ProtectedRoute>
+              <LostFoundClaims />
             </ProtectedRoute>
           }
         />
@@ -70,7 +89,7 @@ function App() {
           path="/lostfound"
           element={
             <ProtectedRoute>
-              <LostFound />
+              <LostFoundNew />
             </ProtectedRoute>
           }
         />
@@ -78,16 +97,20 @@ function App() {
           path="/feedback"
           element={
             <ProtectedRoute>
-              <Feedback />
+              <FeedbackNew />
             </ProtectedRoute>
           }
         />
 
-        {/* 404 Catch-all route */}
-        <Route path="*" element={<Dashboard />} />
+        {/* Default route (for login) */}
+        <Route path="/" element={<Dashboard />} />
       </Routes>
+      
+      {/* Botpress chatbot loaded via index.html */}
     </Router>
+   </ToastProvider>
   );
 }
+
 
 export default App;

@@ -5,20 +5,13 @@ import Club from '../models/Club.js';
 
 dotenv.config();
 
-// Simple utility to manually map existing events to clubs.
-// Edit the `mappings` array below with pairs of eventId -> clubId.
-// Run with `node scripts/mapEventsToClubs.js` to do a dry-run (no writes).
-// Run with `node scripts/mapEventsToClubs.js --apply` to perform updates.
+
 
 const MONG_URI = process.env.MONG_URI || 'mongodb://localhost:27017/klh';
 
-// Example mappings: you can provide either eventId/clubId pairs OR eventTitle/clubName pairs.
-// When using names, the script will attempt an exact (case-insensitive) match first, then a contains match.
-// The mapping below maps the event titled 'Tech Fest 2025' to the club named 'Technical'.
+
 const mappings = [
-  // by id (uncomment and fill real ids):
-  // { eventId: '68fc79b99fb858305c94b012', clubId: '68fc6e76d3657b33afb17e51' },
-  // by title/name (this one will be resolved at runtime):
+  
   { eventTitle: 'Tech Fest 2025', clubName: 'Technical' },
 ];
 

@@ -11,24 +11,80 @@ import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
 import User from "./models/User.js";
 import LostFound from "./models/LostFound.js";
+import Notification from './models/Notification.js';
 
 import eventRoutes from "./routes/eventRoutes.js";
+import { createEvent, updateEvent, subscribeEvent, unsubscribeEvent } from "./controllers/eventController.js";
 import clubRoutes from "./routes/clubRoutes.js";
 import feedbackRoutes from "./routes/feedbackRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 
 dotenv.config();
+// Configurable frontend URL for redirects and CORS (set FRONTEND_URL in production)
+const FRONTEND_URL = process.env.FRONTEND_URL || (process.env.NODE_ENV === 'production' ? 'https://klh-eco-1.onrender.com' : 'http://localhost:3000');
 const app = express();
 app.use(cookieParser());
 app.use(express.json());
+
+// Allow all origins for CORS
 app.use(cors({
-  origin: 'https://klh-eco-frontend.onrender.com',
+  origin: true,
   credentials: true
 }));
-app.use('/uploads', express.static('uploads'));
+
+// Proxy endpoint to fetch production images (for development)
+// This MUST be before the static middleware to avoid route conflicts
+app.get('/uploads/proxy/:filename', async (req, res) => {
+  try {
+    const { filename } = req.params;
+    const productionUrl = `https://klh-eco.onrender.com/uploads/${filename}`;
+    
+    console.log('🔍 Proxying image from production:', productionUrl);
+    
+    // Fetch from production
+    const response = await fetch(productionUrl);
+    
+    if (!response.ok) {
+      console.log('❌ Image not found in production (status ' + response.status + '):', filename);
+      console.log('💡 This image might have been uploaded to production and not synced locally');
+      return res.status(404).json({ 
+        error: 'Image not found in production',
+        filename,
+        productionUrl,
+        tip: 'Image exists in production database but file is missing from production server'
+      });
+    }
+    
+    // Set CORS headers
+    res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Content-Type', response.headers.get('content-type'));
+    
+    // Pipe the image
+    const buffer = await response.arrayBuffer();
+    res.send(Buffer.from(buffer));
+    console.log('✅ Successfully proxied image:', filename);
+  } catch (error) {
+    console.error('💥 Error proxying image:', error.message);
+    res.status(500).json({ 
+      error: 'Error fetching image from production',
+      details: error.message 
+    });
+  }
+});
+
+// Serve uploads with proper CORS headers
+app.use('/uploads', (req, res, next) => {
+  res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+}, express.static('uploads'));
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || 'e8d006ca3409ca0bbed13c60ebafe611fe4fd2857eff7d32185bce79ece996038c39b5fa35818467df36054c382281312478a1325e13d49214fd7c3efd950601',
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
   })
@@ -39,7 +95,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "https://klh-eco-backend.onrender.com/auth/google/callback",
+      callbackURL: process.env.GOOGLE_CALLBACK_URL || "/auth/google/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -89,7 +145,7 @@ app.use(passport.session());
 
 // Root route to redirect to frontend
 app.get("/", (req, res) => {
-  res.redirect("https://klh-eco-frontend.onrender.com");
+  res.redirect(`${FRONTEND_URL}/`);
 });
 
 // Multer config for image uploads
@@ -115,9 +171,9 @@ app.get(
     res.cookie('token', token, { httpOnly: true });
     // Log token and redirect URL for debugging
     // Use URL hash to transmit token to frontend (not sent to server on subsequent requests)
-    const redirectUrl = `https://klh-eco-frontend.onrender.com/dashboard?token=${token}`;
+  const redirectUrl = `${FRONTEND_URL}/dashboard?token=${token}`;
     console.log('OAuth callback: issuing token, token length:', token.length, 'redirecting to', redirectUrl);
-    // Also include token in redirect URL hash so frontend (in dev) can pick it up when cookies are blocked
+    // Also include token in redirect URL query param so frontend can pick it up
     // NOTE: In production you should prefer httpOnly cookie + proper SameSite/Secure settings.
     res.redirect(redirectUrl); // redirect to frontend dashboard
   }
@@ -134,26 +190,26 @@ app.get("/auth/logout", (req, res) => {
           console.error('Error during req.logout:', err);
         }
         // Destroy session store if present
-        if (req.session) {
+          if (req.session) {
           req.session.destroy(() => {
-            res.redirect("https://klh-eco-frontend.onrender.com/");
+            res.redirect(`${FRONTEND_URL}/`);
           });
         } else {
-          res.redirect("https://klh-eco-frontend.onrender.com/");
+          res.redirect(`${FRONTEND_URL}/`);
         }
       });
     } else {
       if (req.session) {
         req.session.destroy(() => {
-          res.redirect("https://klh-eco-frontend.onrender.com/");
+          res.redirect(`${FRONTEND_URL}/`);
         });
       } else {
-        res.redirect("https://klh-eco-frontend.onrender.com/");
+        res.redirect(`${FRONTEND_URL}/`);
       }
     }
-  } catch (err) {
+    } catch (err) {
     console.error('Logout error:', err);
-    res.redirect("https://klh-eco-frontend.onrender.com/");
+    res.redirect(`${FRONTEND_URL}/`);
   }
 });
 
@@ -168,7 +224,6 @@ const verifyToken = (req, res, next) => {
     token = req.cookies.token;
   }
   // Debug logging to help trace why token might be missing in client requests
-  console.log('verifyToken called - authHeader present:', !!authHeader, 'cookie present:', !!(req.cookies && req.cookies.token));
   if (!token) return res.status(401).json({ error: 'Not authenticated' });
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
@@ -222,6 +277,15 @@ app.get("/api/lostfound", async (req, res) => {
   }
 });
 
+// Events: allow multipart/form-data uploads for event posters
+// This route handles creating events with an optional uploaded image file.
+app.post('/api/events', verifyToken, upload.single('image'), createEvent);
+// Support updating event with optional image upload
+app.put('/api/events/:id', verifyToken, upload.single('image'), updateEvent);
+// Subscribe / unsubscribe (protected)
+app.post('/api/events/:id/subscribe', verifyToken, subscribeEvent);
+app.post('/api/events/:id/unsubscribe', verifyToken, unsubscribeEvent);
+
 // Submit a claim for a lost item
 app.post("/api/lostfound/:id/claim", verifyToken, async (req, res) => {
   try {
@@ -241,6 +305,16 @@ app.post("/api/lostfound/:id/claim", verifyToken, async (req, res) => {
       status: 'pending',
     });
     await item.save();
+    // create an in-app notification for the poster of the item
+    try {
+      const claimant = await User.findById(req.userId);
+      const posterId = item.user;
+      const title = 'New claim on your item';
+      const msg = `${claimant.name || 'Someone'} has claimed your item "${item.tag || 'item'}". Click to view claims.`;
+      await Notification.create({ user: posterId, title, message: msg, link: `/lostfound/${item._id}/claims` });
+    } catch (notifErr) {
+      console.error('Failed to create notification for claim:', notifErr);
+    }
     res.status(201).json({ message: 'Claim submitted successfully' });
   } catch (error) {
     res.status(500).send(error.message);
@@ -276,6 +350,21 @@ app.put("/api/lostfound/:id/claim/:claimId/verify", verifyToken, async (req, res
     claim.status = status;
     await item.save();
 
+    // notify claimant about the result
+    try {
+      const claimantUser = await User.findById(claim.claimant);
+      const poster = await User.findById(req.userId);
+      if (claimantUser) {
+        const title = status === 'approved' ? 'Your claim was approved' : 'Your claim was rejected';
+        const msg = status === 'approved'
+          ? `${poster.name || 'An owner'} approved your claim for "${item.tag || 'item'}".`
+          : `${poster.name || 'An owner'} rejected your claim for "${item.tag || 'item'}".`;
+        await Notification.create({ user: claimantUser._id, title, message: msg, link: status === 'approved' ? `/lostfound` : `/lostfound/${item._id}/claims` });
+      }
+    } catch (notifErr) {
+      console.error('Failed to notify claimant:', notifErr);
+    }
+
     if (status === 'approved') {
       // Delete the item from database
       await LostFound.findByIdAndDelete(id);
@@ -305,3 +394,4 @@ mongoose
 app.use("/api/events", eventRoutes);
 app.use("/api/clubs", clubRoutes);
 app.use("/api/feedback", feedbackRoutes);
+app.use('/api/notifications', verifyToken, notificationRoutes);

@@ -3,11 +3,11 @@
 }
 
 :root{
-  --c1: #0B0C10; /* dark */
-  --c2: #1F2833; /* darker slate */
-  --c3: #C5C6C7; /* light gray */
-  --c4: #66FCF1; /* aqua */
-  --c5: #45A29E; /* teal */
+  --c1: #0B0C10;
+  --c2: #1F2833;
+  --c3: #C5C6C7;
+  --c4: #66FCF1;
+  --c5: #45A29E;
   /* card gradient using palette (subtle) */
   --card-gradient: linear-gradient(135deg, rgba(69,162,158,0.06), rgba(102,252,241,0.03));
   --glass: rgba(255,255,255,0.04);
@@ -59,10 +59,10 @@
 
 .app-content {
   padding: 28px 20px;
-  min-height: calc(100vh - 72px); /* keep content area full height beneath navbar */
+  min-height: calc(100vh - 72px);
   box-sizing: border-box;
   color: var(--c3);
-  background: transparent; /* keep the page-level background from body or dashboard hero */
+  background: transparent;
 }
 
 /* If you want a visible page background for all routes, use .app-content.page-bg */
@@ -129,7 +129,7 @@
 .events-sidebar h3,
 .events-main h2,
 .events-main h3 {
-  color: var(--c4); /* #66FCF1 */
+  color: var(--c4);
   font-weight: 600;
 }
 
@@ -178,7 +178,6 @@
 }
 .dashboard-sub { margin-top: 12px; color: var(--c3); font-size: 18px; }
 
-/* Home / Login page styles */
 .home-hero { display:flex; align-items:center; justify-content:center; min-height: calc(100vh - 64px); background: radial-gradient(circle at 90% 10%, rgba(70,162,158,0.04), transparent 8%), linear-gradient(180deg, var(--c2) 0%, var(--c1) 100%); padding:40px 20px; }
 .home-card { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:36px; border-radius:14px; box-shadow:0 10px 30px rgba(11,12,16,0.6); max-width:880px; text-align:center; border:1px solid rgba(102,252,241,0.04); }
 .home-card h1 { margin:0 0 8px 0; font-size:36px; color:var(--c4); }

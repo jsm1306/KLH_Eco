@@ -1,0 +1,505 @@
+
+.lostfound-page-container {
+  min-height: 100vh;
+  background: transparent;
+  padding: 2rem;
+  font-family: 'Inter', sans-serif;
+}
+
+
+.lostfound-page-header {
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid rgba(102, 252, 241, 0.2);
+}
+
+.header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
+.header-text {
+  flex: 1;
+}
+
+.lostfound-page-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--neon-cyan);
+  margin: 0 0 0.75rem 0;
+  text-shadow: 0 0 20px rgba(102, 252, 241, 0.5);
+  letter-spacing: 1.5px;
+}
+
+.lostfound-page-subtitle {
+  font-size: 1rem;
+  color: var(--neon-light-gray);
+  margin: 0;
+  line-height: 1.6;
+  opacity: 0.9;
+  max-width: 800px;
+}
+
+.post-item-btn {
+  padding: 0.875rem 2rem;
+  background: rgba(102, 252, 241, 0.15);
+  border: 2px solid var(--neon-cyan);
+  border-radius: 8px;
+  color: var(--neon-cyan);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.post-item-btn:hover {
+  background: rgba(102, 252, 241, 0.25);
+  box-shadow: 0 4px 20px rgba(102, 252, 241, 0.3);
+  transform: translateY(-2px);
+}
+
+
+.filter-bar {
+  max-width: 1400px;
+  margin: 0 auto 2rem auto;
+  padding: 1.5rem;
+  background: rgba(31, 40, 51, 0.6);
+  border: 1px solid rgba(102, 252, 241, 0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  backdrop-filter: blur(10px);
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.filter-label {
+  color: var(--neon-light-gray);
+  font-weight: 600;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.filter-select {
+  padding: 0.75rem 1rem;
+  background: rgba(11, 12, 16, 0.7);
+  border: 1px solid rgba(102, 252, 241, 0.3);
+  border-radius: 6px;
+  color: var(--neon-light-gray);
+  font-size: 0.95rem;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 180px;
+}
+
+.filter-select:hover,
+.filter-select:focus {
+  border-color: var(--neon-cyan);
+  outline: none;
+  box-shadow: 0 0 10px rgba(102, 252, 241, 0.2);
+}
+
+.clear-filters-btn {
+  padding: 0.75rem 1.5rem;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  border-radius: 6px;
+  color: #fca5a5;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.clear-filters-btn:hover {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: #ef4444;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+.results-count {
+  margin-left: auto;
+  color: var(--neon-cyan);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.5rem 1rem;
+  background: rgba(102, 252, 241, 0.1);
+  border-radius: 6px;
+}
+
+
+.lostfound-grid-new {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+}
+
+.lostfound-loading,
+.lostfound-empty {
+  max-width: 1400px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--neon-light-gray);
+  font-size: 1.1rem;
+}
+
+
+.lostfound-card-new {
+  background: rgba(31, 40, 51, 0.7);
+  border: 1px solid rgba(102, 252, 241, 0.25);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.lostfound-card-new:hover {
+  transform: translateY(-5px);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 8px 32px rgba(102, 252, 241, 0.25);
+}
+
+.lostfound-image-wrapper {
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  background: rgba(11, 12, 16, 0.8);
+  position: relative;
+}
+
+.lostfound-image-new {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.lostfound-card-new:hover .lostfound-image-new {
+  transform: scale(1.05);
+}
+
+.lostfound-card-body {
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  flex: 1;
+}
+
+.item-category-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: rgba(102, 252, 241, 0.15);
+  border: 1px solid rgba(102, 252, 241, 0.4);
+  border-radius: 6px;
+  color: var(--neon-cyan);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  width: fit-content;
+}
+
+.item-description {
+  color: var(--neon-light-gray);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.item-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(102, 252, 241, 0.15);
+}
+
+.detail-row {
+  display: grid;
+  grid-template-columns: 24px auto 1fr;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.detail-icon {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.detail-label {
+  color: rgba(197, 198, 199, 0.7);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.detail-value {
+  color: var(--neon-light-gray);
+  font-weight: 600;
+  text-align: right;
+}
+
+.claims-count {
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+.view-claims-btn {
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  background: rgba(102, 252, 241, 0.15);
+  border: 1px solid var(--neon-cyan);
+  border-radius: 8px;
+  color: var(--neon-cyan);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.5px;
+  margin-top: auto;
+}
+
+.view-claims-btn:hover {
+  background: rgba(102, 252, 241, 0.25);
+  box-shadow: 0 4px 16px rgba(102, 252, 241, 0.3);
+  transform: translateY(-2px);
+}
+
+.claim-item-btn {
+  background: rgba(184, 54, 255, 0.15);
+  border-color: var(--neon-purple);
+  color: var(--neon-purple);
+}
+
+.claim-item-btn:hover {
+  background: rgba(184, 54, 255, 0.25);
+  box-shadow: 0 4px 16px rgba(184, 54, 255, 0.3);
+  border-color: var(--neon-purple);
+}
+
+
+.post-item-modal {
+  background: rgba(31, 40, 51, 0.98);
+  border: 2px solid rgba(102, 252, 241, 0.3);
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 550px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.post-item-modal h2 {
+  font-family: 'Orbitron', sans-serif;
+  color: var(--neon-cyan);
+  margin: 0 0 1.5rem 0;
+  font-size: 1.75rem;
+  letter-spacing: 1px;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  color: var(--neon-light-gray);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.875rem;
+  background: rgba(11, 12, 16, 0.7);
+  border: 1px solid rgba(102, 252, 241, 0.3);
+  border-radius: 6px;
+  color: var(--neon-light-gray);
+  font-size: 0.95rem;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 12px rgba(102, 252, 241, 0.2);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.image-preview {
+  margin-top: 1rem;
+  border: 1px solid rgba(102, 252, 241, 0.3);
+  border-radius: 6px;
+  overflow: hidden;
+  max-width: 300px;
+}
+
+.image-preview img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.cancel-btn,
+.submit-btn {
+  flex: 1;
+  padding: 0.875rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.cancel-btn {
+  background: rgba(197, 198, 199, 0.1);
+  border: 1px solid rgba(197, 198, 199, 0.3);
+  color: var(--neon-light-gray);
+}
+
+.cancel-btn:hover {
+  background: rgba(197, 198, 199, 0.2);
+  border-color: var(--neon-light-gray);
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue));
+  border: none;
+  color: var(--neon-dark);
+}
+
+.submit-btn:hover {
+  box-shadow: 0 6px 24px rgba(102, 252, 241, 0.4);
+  transform: translateY(-2px);
+}
+
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+@media (max-width: 1024px) {
+  .lostfound-grid-new {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .lostfound-page-container {
+    padding: 1rem;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .lostfound-page-title {
+    font-size: 2rem;
+  }
+
+  .post-item-btn {
+    width: 100%;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-select {
+    width: 100%;
+  }
+
+  .results-count {
+    margin-left: 0;
+    text-align: center;
+  }
+
+  .lostfound-grid-new {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-row {
+    grid-template-columns: 24px 1fr;
+    gap: 0.75rem;
+  }
+
+  .detail-label {
+    grid-column: 2;
+  }
+
+  .detail-value {
+    grid-column: 2;
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .lostfound-page-title {
+    font-size: 1.5rem;
+  }
+
+  .lostfound-page-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .lostfound-card-body {
+    padding: 1.25rem;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+}
